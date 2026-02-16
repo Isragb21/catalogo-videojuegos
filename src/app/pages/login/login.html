@@ -1,0 +1,14 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>Bienvenido Gamer 🎮</h2>
+    <p>Ingresa a la zona administrativa</p>
+    
+    <label>Correo Electrónico:</label>
+    <input type="email" [(ngModel)]="correo" placeholder="ejemplo@gamestore.com">
+
+    <label>Contraseña:</label>
+    <input type="password" [(ngModel)]="pass" placeholder="******">
+
+    <button (click)="iniciarSesion()">Ingresar</button>
+  </div>
+</div>

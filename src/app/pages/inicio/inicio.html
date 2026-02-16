@@ -1,0 +1,42 @@
+<div class="home-container">
+  <header class="hero">
+    <h1>GameStore: El Poder de Jugar 🚀</h1>
+    <p>Explora, compara y adquiere los mejores títulos del mercado.</p>
+  </header>
+
+  <section class="enlaces-externos">
+    <h2>🔗 Enlaces de Interés Externo</h2>
+    <p class="doc-text">
+      <em>Relevancia: Los enlaces externos con <strong>rel="noopener"</strong> garantizan seguridad al navegar.</em>
+    </p>
+    
+    <div class="menu-grid">
+      @for (link of enlacesExternos; track link.nombre) {
+        <a [href]="link.url" target="_blank" rel="noopener noreferrer" class="card-link">
+          <span class="icono">{{ link.icono }}</span>
+          <div class="info">
+            <strong>{{ link.nombre }}</strong>
+            <p>{{ link.desc }}</p>
+          </div>
+        </a>
+      }
+    </div>
+  </section>
+
+  <section class="seccion-ventas">
+    <h2>Información de Venta</h2>
+    <div class="info-grid">
+      @for (info of infoVenta; track info.titulo) {
+        <div class="card-venta">
+          <h3>{{ info.titulo }}</h3>
+          <p>{{ info.detalle }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <footer class="controles">
+    <button routerLink="/catalogo">Ver Catálogo</button>
+    <button routerLink="/admin" class="btn-admin">Acceso Admin</button>
+  </footer>
+</div>
