@@ -1,0 +1,32 @@
+<div class="info-page">
+  <header class="info-header">
+    <h1> Información del Sitio y Términos</h1>
+    <p>Documentación oficial de GameStore 2026</p>
+  </header>
+
+  <section class="seccion">
+    <h2> Descripción del Proyecto</h2>
+    <p>{{ descripcion }}</p>
+  </section>
+
+  <section class="seccion">
+    <h2> Público Objetivo</h2>
+    <div class="grid-publico">
+      @for (p of publicos; track p.perfil) {
+        <div class="card-p">
+          <h3>{{ p.perfil }}</h3>
+          <p>{{ p.desc }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="seccion terminos">
+    <h2> Términos de Uso</h2>
+    <ul>
+      @for (t of terminos; track t) {
+        <li>{{ t }}</li>
+      }
+    </ul>
+  </section>
+</div>

@@ -15,7 +15,7 @@ export class App {
   // para poder usarlo en el HTML
   public auth = inject(AuthService);
 
-  // Función para cerrar sesión desde el menú
+
   cerrarSesion() {
     this.auth.logout();
   }
