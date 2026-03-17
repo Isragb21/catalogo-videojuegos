@@ -1,63 +1,29 @@
-<div class="contenedor-carrito">
-  <button class="boton-carrito" (click)="toggleCarrito()">
-    🛒 Carrito: {{ carrito.length }}
-  </button>
+<div class="container main-content catalogo-container">
+  <header class="section-header">
+    <h1 class="page-title neon-text-green">Catálogo de <span class="gradient-text">Videojuegos</span></h1>
+    <p class="section-subtitle">Explora nuestra colección y encuentra tu próximo desafío.</p>
+  </header>
 
-  @if (mostrarCarrito) {
-    <div class="lista-carrito">
-      <h4>Tus Compras</h4>
-      
-      @if (carrito.length === 0) {
-        <p>El carrito está vacío.</p>
-      }
+  <div class="search-bar glass-input-group">
+    <input type="text" [(ngModel)]="busqueda" (ngModelChange)="filtrarJuegos()" placeholder="Buscar juego por título..." />
+    <span class="search-icon">🔍</span>
+  </div>
 
-      @for (item of carrito; track $index) {
-        <div class="item-carrito">
-          <img [src]="item.imagen" alt="miniatura">
-          <div class="info-item">
-            <span>{{ item.titulo }}</span>
-            <br><small>${{ item.precio }}</small>
-          </div>
-          <button class="boton-eliminar" (click)="eliminarDelCarrito($index)">
-            🗑️
-          </button>
-        </div>
-      }
-
-      @if (carrito.length > 0) {
-        <div class="total-seccion">
-          <h3>Total: ${{ totalCarrito.toFixed(2) }}</h3>
-          <button class="boton-pagar" (click)="pagar()">Pagar Ahora</button>
-        </div>
-      }
-    </div>
-  }
-</div>
-
-<div class="contenedor">
-  <h1>Catálogo de Videojuegos</h1>
-
-  <input 
-    type="text" 
-    [(ngModel)]="busqueda" 
-    (input)="filtrarJuegos()"
-    placeholder="Buscar juego..." 
-    class="buscador"
-  >
-
-  <div class="grid-juegos">
+  <div class="grid-container games-grid">
     @for (juego of juegosFiltrados; track juego.id) {
-      <div class="tarjeta-juego">
-        <h3>{{ juego.titulo }}</h3>
-        <p>Plataforma: {{ juego.plataforma }}</p>
-        <p class="precio">${{ juego.precio }}</p>
-        <img [src]="juego.imagen" alt="{{ juego.titulo }}">
-        <button (click)="comprar(juego)">Agregar al Carrito</button>
+      <div class="glass-card game-card">
+        <img [src]="juego.imagenUrl" [alt]="juego.titulo" class="card-image" />
+        <div class="card-content">
+          <h2 class="card-title">{{ juego.titulo }}</h2>
+          <div class="card-metadata">
+            <span class="platform-badge">{{ juego.plataforma }}</span>
+            <span class="price-tag neon-text-green">${{ juego.precio }}</span>
+          </div>
+        <div class="card-actions">
+          <button class="btn btn-outline-green btn-view-details">Ver detalles</button>
+        </div>
+        </div>
       </div>
-    }
-
-    @if (juegosFiltrados.length === 0) {
-      <p>No se encontraron juegos con ese nombre.</p>
     }
   </div>
 </div>

@@ -1,68 +1,108 @@
-.login-container {
+/* Contenedor principal centrado a pantalla completa */
+.login-page-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: #0d0d0d;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 80vh;
-  background-color: #f4f4f9;
+  padding: 20px;
 }
 
-.login-card {
-  background: white;
+/* Carta de cristal con resplandor Premium */
+.login-glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   width: 100%;
-  max-width: 350px;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   text-align: center;
+  animation: floatFadeIn 1s ease-out;
 }
 
-h2 {
-  color: #2c3e50;
+.login-glass-card:hover {
+  border-color: rgba(0, 237, 100, 0.4);
+  box-shadow: 0 10px 40px rgba(0, 237, 100, 0.2);
+}
+
+.card-header {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.institucional-notice {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 30px;
+}
+
+/* Campos de entrada de cristal */
+.glass-input-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.glass-input-group label {
+  display: block;
+  color: #aaaaaa;
+  font-size: 0.9rem;
   margin-bottom: 5px;
 }
 
-p {
-  color: #7f8c8d;
-  margin-bottom: 25px;
-  font-size: 0.9rem;
-}
-
-label {
-  display: block;
-  text-align: left;
-  margin-bottom: 8px;
-  font-weight: bold;
-  color: #34495e;
-}
-
-input {
+.glass-input-group input {
   width: 100%;
   padding: 12px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(0, 237, 100, 0.1);
+  color: #fff;
+  border-radius: 5px;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Alerta de error */
+.error-alert {
+  background: rgba(255, 76, 76, 0.1);
+  color: #ff4c4c;
+  border: 1px solid #ff4c4c;
+  padding: 10px;
+  border-radius: 5px;
   margin-bottom: 20px;
-  border: 2px solid #ecf0f1;
-  border-radius: 8px;
-  font-size: 1rem;
-  box-sizing: border-box; /* Para que el padding no rompa el ancho */
 }
 
-input:focus {
-  border-color: #3498db;
-  outline: none;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  background-color: #3498db;
-  color: white;
+/* Botones con brillo */
+.btn-cta {
+  background: #00ed64;
+  color: #000;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background 0.3s;
+  font-weight: 700;
+  text-shadow: none;
+  margin-top: 15px;
 }
 
-button:hover {
-  background-color: #2980b9;
+.btn-cta:hover {
+  box-shadow: 0 0 15px #00ed64;
+}
+
+.btn-register-redirect {
+  margin-top: 15px;
+  border-color: #00ed64;
+  color: #00ed64;
+}
+
+.btn-register-redirect:hover {
+  background: rgba(0, 237, 100, 0.1);
+}
+
+/* Animaciones */
+@keyframes floatFadeIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

@@ -1,26 +1,39 @@
-<nav class="navbar">
-  <div class="logo">🎮 GameStore</div>
+<nav class="navbar-cyber">
+  <div class="nav-blur-bg"></div>
   
-  <ul class="menu-links">
-    <li><a routerLink="/inicio" routerLinkActive="activo">Inicio</a></li>
-    <li><a routerLink="/informacion" routerLinkActive="activo">📄 Información</a></li>
-    <li><a routerLink="/catalogo" routerLinkActive="activo">Catálogo</a></li>
+  <div class="nav-container">
+    <div class="logo-wrapper" routerLink="/inicio">
+      <div class="logo-icon"><span class="icon-inner">G</span></div>
+      <span class="logo-text">Game<span class="text-neon">Store</span></span>
+    </div>
 
-    @if (auth.usuario$ | async; as usuario) {
-      <li><a routerLink="/perfil" routerLinkActive="activo">👤 Mi Perfil</a></li>
-      <li><a routerLink="/admin" routerLinkActive="activo">🛠 Admin</a></li>
-      
-      <li class="usuario-info">
-        <span>{{ usuario.email }}</span>
-        <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
-      </li>
+    <ul class="nav-links">
+      <li><a routerLink="/inicio" routerLinkActive="active">Inicio</a></li>
+      <li><a routerLink="/informacion" routerLinkActive="active">Información</a></li>
+      <li><a routerLink="/catalogo" routerLinkActive="active">Catálogo</a></li>
+    </ul>
 
-    } @else {
-      <li><a routerLink="/login" class="btn-login">Iniciar Sesión</a></li>
-    }
-  </ul>
+    <div class="auth-section">
+      @if (auth.usuario$ | async; as user) {
+        <div class="user-control">
+          <div class="user-meta">
+            <span class="welcome-text">Bienvenido,</span>
+            <span class="user-email">{{ user.email }}</span>
+          </div>
+          <div class="nav-actions">
+            <a routerLink="/perfil" class="btn-icon">👤</a>
+            <a routerLink="/admin" class="btn-icon admin-glow">⚙️</a>
+            <button (click)="cerrarSesion()" class="btn-logout-neon">SALIR</button>
+          </div>
+        </div>
+      } @else {
+        <button routerLink="/login" class="btn-login-cyber">ACCESO GAMER</button>
+      }
+    </div>
+  </div>
+  <div class="nav-bottom-line"></div>
 </nav>
 
-<div class="contenido-pagina">
+<main class="main-content">
   <router-outlet></router-outlet>
-</div>
+</main>

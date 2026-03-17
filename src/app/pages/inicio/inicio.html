@@ -1,42 +1,71 @@
-<div class="home-container">
-  <header class="hero">
-    <h1>GameStore: El Poder de Jugar 🚀</h1>
-    <p>Explora, compara y adquiere los mejores títulos del mercado.</p>
+<div class="inicio-container">
+  <header class="hero-section">
+    <div class="hero-glow"></div>
+    <h1 class="titulo-neon">GameStore: <span class="texto-gradiente">El Poder de Jugar 🚀</span></h1>
+    <p class="hero-subtitulo">Explora, compara y adquiere los mejores títulos del mercado digital.</p>
+    
+    <div class="hero-botones">
+      <button class="btn-cta" routerLink="/catalogo">Ver Catálogo</button>
+      <button class="btn-outline" routerLink="/admin">Acceso Admin</button>
+    </div>
   </header>
 
-  <section class="enlaces-externos">
-    <h2>🔗 Enlaces de Interés Externo</h2>
-    <p class="doc-text">
-      <em>Relevancia: Los enlaces externos con <strong>rel="noopener"</strong> garantizan seguridad al navegar.</em>
-    </p>
-    
-    <div class="menu-grid">
-      @for (link of enlacesExternos; track link.nombre) {
-        <a [href]="link.url" target="_blank" rel="noopener noreferrer" class="card-link">
-          <span class="icono">{{ link.icono }}</span>
-          <div class="info">
-            <strong>{{ link.nombre }}</strong>
-            <p>{{ link.desc }}</p>
-          </div>
-        </a>
-      }
+  <section class="seccion-dashboard">
+    <div class="encabezado-seccion">
+      <h2>🔗 Enlaces de Interés Externo</h2>
+      <p>Relevancia: Enlaces con <code>rel="noopener"</code> para garantizar tu seguridad.</p>
     </div>
-  </section>
 
-  <section class="seccion-ventas">
-    <h2>Información de Venta</h2>
-    <div class="info-grid">
-      @for (info of infoVenta; track info.titulo) {
-        <div class="card-venta">
-          <h3>{{ info.titulo }}</h3>
-          <p>{{ info.detalle }}</p>
+    <div class="grid-cards">
+      <a href="https://store.steampowered.com" target="_blank" rel="noopener noreferrer" class="glass-card link-card">
+        <div class="card-icono">🎮</div>
+        <div class="card-info">
+          <h3>Steam Store</h3>
+          <p>Precios globales PC</p>
         </div>
-      }
+      </a>
+      <a href="https://www.metacritic.com" target="_blank" rel="noopener noreferrer" class="glass-card link-card">
+        <div class="card-icono">⭐</div>
+        <div class="card-info">
+          <h3>Metacritic</h3>
+          <p>Reseñas de expertos</p>
+        </div>
+      </a>
+      <a href="https://store.playstation.com" target="_blank" rel="noopener noreferrer" class="glass-card link-card">
+        <div class="card-icono">🟦</div>
+        <div class="card-info">
+          <h3>PlayStation Store</h3>
+          <p>Catálogo de consola</p>
+        </div>
+      </a>
+      <a href="https://gaming.youtube.com" target="_blank" rel="noopener noreferrer" class="glass-card link-card">
+        <div class="card-icono">📺</div>
+        <div class="card-info">
+          <h3>YouTube Gaming</h3>
+          <p>Trailers oficiales</p>
+        </div>
+      </a>
     </div>
   </section>
 
-  <footer class="controles">
-    <button routerLink="/catalogo">Ver Catálogo</button>
-    <button routerLink="/admin" class="btn-admin">Acceso Admin</button>
-  </footer>
+  <section class="seccion-dashboard">
+    <div class="encabezado-seccion">
+      <h2>🛡️ Información de Venta</h2>
+    </div>
+
+    <div class="grid-cards">
+      <div class="glass-card info-card border-green">
+        <h3>💳 Pagos 100% Seguros</h3>
+        <p>Encriptación SSL de grado militar para proteger tus datos bancarios en cada transacción.</p>
+      </div>
+      <div class="glass-card info-card border-green">
+        <h3>🎧 Soporte Especializado</h3>
+        <p>Expertos listos 24/7 para ayudarte con la instalación y activación de tus juegos.</p>
+      </div>
+      <div class="glass-card info-card border-green">
+        <h3>🔄 Catálogo Actualizado</h3>
+        <p>Inventario sincronizado directamente con la nube y las últimas novedades del mercado.</p>
+      </div>
+    </div>
+  </section>
 </div>

@@ -1,1 +1,61 @@
-<p>perfil works!</p>
+<div class="container main-content" style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+
+  @if (cargando) {
+    <div style="text-align: center; color: #00ed64;">
+      <h2 style="font-family: 'Orbitron', sans-serif;">⏳ Sincronizando datos...</h2>
+    </div>
+  } @else {
+    <div class="glass-card" style="width: 100%; max-width: 500px; padding: 40px; border-radius: 15px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 class="neon-text-green" style="font-family: 'Orbitron', sans-serif; margin: 0;">Mi Cuartel</h1>
+        <p style="color: #bbb; font-size: 0.9rem;">Actualiza tu información de combate</p>
+      </div>
+
+      <form (ngSubmit)="guardarCambios()">
+        
+        <div class="form-group glass-input-group" style="margin-bottom: 20px;">
+          <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Correo Electrónico:</label>
+          <input 
+            type="email" 
+            [value]="usuario.email" 
+            disabled 
+            style="width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #888; border-radius: 5px; cursor: not-allowed;" 
+          />
+        </div>
+
+        <div class="form-group glass-input-group" style="margin-bottom: 20px;">
+          <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Nombre de Guerrero:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="usuario.nombre" 
+            name="nombre" 
+            placeholder="Ej. MasterChief" 
+            style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px;"
+            required 
+          />
+        </div>
+
+        <div class="form-group glass-input-group" style="margin-bottom: 30px;">
+          <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Número de Contacto:</label>
+          <input 
+            type="tel" 
+            [(ngModel)]="usuario.telefono" 
+            name="telefono" 
+            placeholder="555-000-0000" 
+            style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px;"
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          style="width: 100%; padding: 15px; background: #00ed64; color: #000; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s;"
+          onmouseover="this.style.boxShadow='0 0 15px rgba(0, 237, 100, 0.6)'"
+          onmouseout="this.style.boxShadow='none'">
+          GUARDAR CAMBIOS
+        </button>
+
+      </form>
+    </div>
+  }
+
+</div>

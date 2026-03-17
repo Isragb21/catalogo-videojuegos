@@ -1,14 +1,34 @@
-<div class="login-container">
-  <div class="login-card">
-    <h2>Bienvenido Gamer 🎮</h2>
-    <p>Ingresa a la zona administrativa</p>
-    
-    <label>Correo Electrónico:</label>
-    <input type="email" [(ngModel)]="correo" placeholder="ejemplo@gamestore.com">
+<div class="login-page-wrapper full-dark-bg">
+  <div class="login-glass-card">
+    <header class="card-header neon-text-green">{{ modoRegistro ? 'Crear Nueva Cuenta' : '🎮 Acceso a GameStore' }}</header>
+    <p class="institucional-notice">Exclusivo para comunidad UTEQ</p>
 
-    <label>Contraseña:</label>
-    <input type="password" [(ngModel)]="pass" placeholder="******">
+    <form>
+      <div class="form-group glass-input-group">
+        <label>Correo Institucional:</label>
+        <input type="email" [(ngModel)]="email" name="email" placeholder="ejemplo@uteq.edu.mx" required />
+      </div>
 
-    <button (click)="iniciarSesion()">Ingresar</button>
+      <div class="form-group glass-input-group">
+        <label>Contraseña:</label>
+        <input type="password" [(ngModel)]="password" name="password" placeholder="Mínimo 6 caracteres" required />
+      </div>
+
+      @if (modoRegistro) {
+        <div class="form-group glass-input-group">
+          <label>Confirmar Contraseña:</label>
+          <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Repite tu contraseña" required>
+        </div>
+      }
+
+      @if (mensajeError) { <div class="error-alert">⚠️ {{ mensajeError }}</div> }
+
+      <button type="button" class="btn btn-full-width btn-full-green btn-cta btn-login-submit" (click)="procesarFormulario()">
+        {{ modoRegistro ? 'Registrarse' : 'Ingresar' }}
+      </button>
+      <button type="button" class="btn btn-full-width btn-outline-green btn-register-redirect" (click)="toggleModo()">
+        {{ modoRegistro ? '¿Ya tienes cuenta? Inicia sesión' : 'Crear Cuenta' }}
+      </button>
+    </form>
   </div>
 </div>

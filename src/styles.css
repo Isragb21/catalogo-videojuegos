@@ -1,1 +1,29 @@
-/* You can add global styles to this file, and also import other style files */
+/* Importamos una fuente moderna de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0d0d0d; /* Fondo ultra oscuro */
+  color: #e0e0e0; /* Texto gris claro para no cansar la vista */
+  font-family: 'Poppins', sans-serif; 
+}
+
+/* Custom Scrollbar Gamer */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0d0d;
+}
+::-webkit-scrollbar-thumb {
+  background: #00ed64; /* Verde neón */
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00c753;
+}

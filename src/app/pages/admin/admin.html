@@ -1,72 +1,66 @@
-<div class="admin-container">
-  <h1>🛠️ Panel de Administración</h1>
+<div class="container main-content admin-container">
+  <header class="section-header">
+    <h1 class="page-title neon-text-green">Panel de <span class="gradient-text">Administración</span></h1>
+    <p class="section-subtitle">Gestión de inventario en tiempo real.</p>
+  </header>
 
-  <div class="card-formulario">
-    <h2>Agregar Nuevo Videojuego</h2>
-    <div class="form-grid">
-      <div class="campo">
-        <label for="titulo">Título del Juego:</label>
-        <input id="titulo" type="text" [(ngModel)]="nuevoTitulo" placeholder="Ej. Zelda">
-      </div>
-      <div class="campo">
-        <label for="plataforma">Plataforma:</label>
-        <select id="plataforma" [(ngModel)]="nuevaPlataforma">
-          <option value="">Selecciona una...</option>
-          <option value="PlayStation 5">PlayStation 5</option>
-          <option value="Xbox Series X">Xbox Series X</option>
-          <option value="Nintendo Switch">Nintendo Switch</option>
-          <option value="PC">PC</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label for="precio">Precio ($):</label>
-        <input id="precio" type="number" [(ngModel)]="nuevoPrecio" placeholder="0">
-      </div>
-      <div class="campo">
-        <label for="imagen">URL de Imagen:</label>
-        <input id="imagen" type="text" [(ngModel)]="nuevaImagen" placeholder="https://...">
+  <div class="grid-container dashboard-grid">
+    <div class="glass-card form-card add-game-form">
+      <h2>Agregar Nuevo Videojuego</h2>
+      <form (ngSubmit)="agregarJuego()">
+        <div class="form-group glass-input-group">
+          <label>Título del Juego:</label>
+          <input type="text" [(ngModel)]="nuevoTitulo" name="titulo" placeholder="Ej. Need for Speed" required />
+        </div>
+        <div class="form-group glass-input-group">
+          <label>Plataforma:</label>
+          <input type="text" [(ngModel)]="nuevaPlataforma" name="plataforma" placeholder="Ej. PC" required />
+        </div>
+        <div class="form-group glass-input-group">
+          <label>Precio ($):</label>
+          <input type="number" [(ngModel)]="nuevoPrecio" name="precio" placeholder="0" required />
+        </div>
+        <div class="form-group glass-input-group">
+          <label>URL de Imagen:</label>
+          <input type="text" [(ngModel)]="nuevaImagen" name="imagen" placeholder="https://..." required />
+        </div>
+        <button type="submit" class="btn btn-full-width btn-full-green btn-save-game">Guardar en Base de Datos</button>
+      </form>
+    </div>
+
+    <div class="glass-card status-card">
+      <h3>Estado del Sistema:</h3>
+      <div class="status-indicator connected">{{ mensajeEstado }}</div>
+    </div>
+
+    <div class="glass-card table-card current-inventory">
+      <h2>Inventario Actual ({{ juegos.length }})</h2>
+      <div class="table-container glass-table-container">
+        <table class="glass-table">
+          <thead>
+            <tr>
+              <th>Imagen</th>
+              <th>Título</th>
+              <th>Plataforma</th>
+              <th>Precio</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (juego of juegos; track juego.id) {
+              <tr>
+                <td><img [src]="juego.imagen" alt="{{ juego.titulo }}" class="table-image" /></td>
+                <td>{{ juego.titulo }}</td>
+                <td>{{ juego.plataforma }}</td>
+                <td class="table-price neon-text-green">${{ juego.precio }}</td>
+                <td class="table-actions">
+                  <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarJuego(juego.id!)">Eliminar</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
     </div>
-    <button class="btn-guardar" (click)="agregarJuego()">💾 Guardar en Base de Datos</button>
-  </div>
-
-  <hr>
-<div style="background: #eee; padding: 10px; margin: 10px 0; border-radius: 5px;">
-  <strong>Estado del Sistema:</strong> {{ mensajeEstado }}
-</div>
-  <h2>Inventario Actual ({{ juegos.length }})</h2>
-  
-  <div class="tabla-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Imagen</th>
-          <th>Título</th>
-          <th>Plataforma</th>
-          <th>Precio</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (juego of juegos; track juego.id) {
-          <tr>
-            <td><img [src]="juego.imagen" alt="img" class="img-preview"></td>
-            <td>{{ juego.titulo }}</td>
-            <td>{{ juego.plataforma }}</td>
-            <td>${{ juego.precio }}</td>
-            <td>
-              <button class="btn-borrar" (click)="borrarJuego(juego.id!)">🗑️ Eliminar</button>
-            </td>
-          </tr>
-        }
-        @if (juegos.length === 0) {
-          <tr>
-            <td colspan="5" style="text-align: center; padding: 20px;">
-              No hay juegos cargados todavía. ¡Agrega uno arriba! 👆
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
   </div>
 </div>

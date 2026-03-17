@@ -1,37 +1,62 @@
-import { Injectable, inject } from '@angular/core';
-import { Auth, signInWithEmailAndPassword, signOut, user, User } from '@angular/fire/auth';
-import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, authState } from '@angular/fire/auth';
+import { Firestore, collection, setDoc, doc, collectionData, deleteDoc, getDoc } from '@angular/fire/firestore';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  // Inyectamos las herramientas de Firebase y el Router
+  
   private auth = inject(Auth);
-  private router = inject(Router);
+  private firestore = inject(Firestore);
 
-  // Esta variable 'usuario$' nos dirá en todo momento quién está conectado
-  // Si es null, es que no hay nadie.
-  usuario$: Observable<User | null> = user(this.auth);
+  usuario$ = authState(this.auth);
 
-  constructor() { }
+  async registro(email: string, pass: string) {
+    const credenciales = await createUserWithEmailAndPassword(this.auth, email, pass);
+    const uid = credenciales.user.uid;
 
-  // Función para INICIAR SESIÓN
-  async login(correo: string, pass: string) {
-    try {
-      await signInWithEmailAndPassword(this.auth, correo, pass);
-      // Si todo sale bien, nos manda al inicio
-      this.router.navigate(['/inicio']);
-    } catch (error) {
-      console.error('Error al entrar:', error);
-      alert('Error: Correo o contraseña incorrectos.');
-    }
+    const usuarioRef = doc(this.firestore, `usuarios/${uid}`);
+    return setDoc(usuarioRef, {
+      uid: uid,
+      email: email,
+      nombre: '', 
+      telefono: '', 
+      fotoUrl: '', 
+      rol: 'usuario', 
+      fechaRegistro: new Date().toISOString()
+    });
   }
 
-  // Función para CERRAR SESIÓN
-  async logout() {
-    await signOut(this.auth);
-    this.router.navigate(['/login']);
+  login(email: string, pass: string) {
+    return signInWithEmailAndPassword(this.auth, email, pass);
+  }
+
+  logout() {
+    return signOut(this.auth);
+  }
+
+  // Obtiene los datos del perfil de usuario mediante una promesa
+  async obtenerPerfil(uid: string) {
+    const userDoc = doc(this.firestore, `usuarios/${uid}`);
+    const docSnap = await getDoc(userDoc);
+    
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+    return null;
+  }
+
+  actualizarPerfil(uid: string, datos: any) {
+    const userDoc = doc(this.firestore, `usuarios/${uid}`);
+    return setDoc(userDoc, datos, { merge: true });
+  }
+
+  obtenerTodosLosUsuarios() {
+    const usuariosRef = collection(this.firestore, 'usuarios');
+    return collectionData(usuariosRef, { idField: 'id' });
+  }
+
+  eliminarUsuarioDB(uid: string) {
+    const usuarioDoc = doc(this.firestore, `usuarios/${uid}`);
+    return deleteDoc(usuarioDoc);
   }
 }
