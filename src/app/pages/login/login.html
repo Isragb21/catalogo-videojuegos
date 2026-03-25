@@ -1,34 +1,57 @@
-<div class="login-page-wrapper full-dark-bg">
+<div class="login-page-wrapper">
   <div class="login-glass-card">
-    <header class="card-header neon-text-green">{{ modoRegistro ? 'Crear Nueva Cuenta' : '🎮 Acceso a GameStore' }}</header>
-    <p class="institucional-notice">Exclusivo para comunidad UTEQ</p>
+    
+    <header>
+      <h1 class="card-header">🎮 Acceso a<br><span class="gradient-text">GameStore</span></h1>
+      <p class="institucional-notice">Exclusivo para comunidad UTEQ</p>
+    </header>
 
-    <form>
-      <div class="form-group glass-input-group">
+    <form (ngSubmit)="procesarFormulario()">
+      
+      <div class="glass-input-group">
         <label>Correo Institucional:</label>
         <input type="email" [(ngModel)]="email" name="email" placeholder="ejemplo@uteq.edu.mx" required />
       </div>
 
-      <div class="form-group glass-input-group">
+      <div class="glass-input-group">
         <label>Contraseña:</label>
-        <input type="password" [(ngModel)]="password" name="password" placeholder="Mínimo 6 caracteres" required />
+        <input type="password" [(ngModel)]="password" name="password" placeholder="••••••••" required />
       </div>
 
       @if (modoRegistro) {
-        <div class="form-group glass-input-group">
+        <div class="glass-input-group">
+          <label>Nombre Completo:</label>
+          <input type="text" [(ngModel)]="nombre" name="nombre" placeholder="Tu nombre real" required />
+        </div>
+
+        <div class="glass-input-group">
+          <label>Teléfono:</label>
+          <input type="tel" [(ngModel)]="telefono" name="telefono" placeholder="442 123 4567" required />
+        </div>
+
+        <div class="glass-input-group">
           <label>Confirmar Contraseña:</label>
-          <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Repite tu contraseña" required>
+          <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="••••••••" required />
         </div>
       }
 
-      @if (mensajeError) { <div class="error-alert">⚠️ {{ mensajeError }}</div> }
+      @if (mensajeError) {
+        <div class="error-alert">
+          ⚠️ {{ mensajeError }}
+        </div>
+      }
 
-      <button type="button" class="btn btn-full-width btn-full-green btn-cta btn-login-submit" (click)="procesarFormulario()">
-        {{ modoRegistro ? 'Registrarse' : 'Ingresar' }}
-      </button>
-      <button type="button" class="btn btn-full-width btn-outline-green btn-register-redirect" (click)="toggleModo()">
-        {{ modoRegistro ? '¿Ya tienes cuenta? Inicia sesión' : 'Crear Cuenta' }}
-      </button>
+      <div class="form-actions">
+        <button type="submit" class="btn-cta">
+          {{ modoRegistro ? 'Registrarme' : 'Ingresar' }}
+        </button>
+        
+        <button type="button" class="btn-register-redirect" (click)="toggleModo()">
+          {{ modoRegistro ? 'Volver al Login' : 'Crear Cuenta Nueva' }}
+        </button>
+      </div>
+
     </form>
+    
   </div>
 </div>

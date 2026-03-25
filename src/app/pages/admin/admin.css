@@ -24,26 +24,40 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-/* Formulario */
+/* Formularios (Acomodados a la izquierda) */
 .form-card {
-  grid-row: 1 / 3;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
+.add-game-form { grid-column: 1; grid-row: 1; }
+.add-user-form { grid-column: 1; grid-row: 2; }
 
+/* Tablas (Acomodadas a la derecha) */
+.current-inventory { grid-column: 2; grid-row: 1; }
+.users-inventory { grid-column: 2; grid-row: 2; }
+
+/* Inputs y Selects */
 .glass-input-group { margin-bottom: 15px; }
 .glass-input-group label { color: #aaa; font-size: 0.9rem; margin-bottom: 5px; display: block;}
-.glass-input-group input {
+.glass-input-group input, 
+.glass-input-group select {
   width: 100%; padding: 10px; background: rgba(0,0,0,0.5);
   border: 1px solid rgba(0, 237, 100, 0.2); color: #fff; border-radius: 5px;
+  outline: none;
 }
+.glass-input-group select option { color: #000; } /* Para que se lea bien al abrirlo */
 
-.btn-save-game {
+/* Botones Principales (Neón Verde) */
+.btn-save-game, .btn-save-user {
   background: #00ed64; color: #000; border: none; padding: 12px;
   width: 100%; font-weight: bold; border-radius: 5px; cursor: pointer;
+  transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;
 }
-.btn-save-game:hover { box-shadow: 0 0 15px #00ed64; }
+.btn-save-game:hover, .btn-save-user:hover { 
+  box-shadow: 0 0 15px #00ed64; 
+  transform: translateY(-2px); 
+}
 
 /* Estado del sistema */
 .status-indicator {
@@ -51,16 +65,26 @@
 }
 .connected { background: rgba(0, 237, 100, 0.1); color: #00ed64; border: 1px solid #00ed64; }
 
-/* Tabla de Inventario */
+/* Tabla de Inventario y Usuarios */
 .glass-table-container { overflow-x: auto; margin-top: 15px; }
 .glass-table { width: 100%; border-collapse: collapse; text-align: left; }
 .glass-table th { padding: 15px; background: rgba(0, 237, 100, 0.1); color: #00ed64; border-bottom: 2px solid #00ed64; }
-.glass-table td { padding: 12px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+.glass-table td { padding: 12px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
 .glass-table tbody tr:hover { background: rgba(0, 237, 100, 0.05); }
 
 .table-image { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
 .table-price { font-weight: bold; color: #00ed64; }
-.btn-delete { background: #ff4c4c; color: #fff; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
-.btn-delete:hover { box-shadow: 0 0 10px #ff4c4c; }
+
+/* Botones de Acción en Tablas */
+.btn-delete { background: #ff4c4c; color: #fff; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: all 0.3s;}
+.btn-delete:hover { box-shadow: 0 0 10px #ff4c4c; transform: scale(1.05);}
+
+/* Responsivo para móviles */
+@media (max-width: 992px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .add-game-form, .add-user-form, .current-inventory, .users-inventory {
+    grid-column: 1; grid-row: auto;
+  }
+}
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

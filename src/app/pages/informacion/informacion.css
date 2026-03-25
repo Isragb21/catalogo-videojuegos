@@ -2,7 +2,7 @@
 .info-header { text-align: center; border-bottom: 2px solid #00ed64; margin-bottom: 30px; padding-bottom: 20px; }
 .seccion { margin-bottom: 40px; }
 .grid-publico { display: flex; gap: 20px; margin-top: 15px; }
-.card-p { flex: 1; background: #f4f4f4; padding: 15px; border-radius: 8px; border-left: 4px solid #006ce0; }
-.terminos { background: #fff8e1; padding: 20px; border-radius: 10px; }
+.card-p { flex: 1; background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 4px solid #00ed64; color: #fff; }
+.terminos { background: #1a1a1a; padding: 20px; border-radius: 10px; color: #fff; }
 ul { padding-left: 20px; }
 li { margin-bottom: 10px; }

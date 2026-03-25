@@ -1,36 +1,174 @@
 <div class="container main-content admin-container">
   <header class="section-header">
     <h1 class="page-title neon-text-green">Panel de <span class="gradient-text">Administración</span></h1>
-    <p class="section-subtitle">Gestión de inventario en tiempo real.</p>
+    <p class="section-subtitle">Gestión de inventario y usuarios en tiempo real.</p>
   </header>
 
-  <div class="grid-container dashboard-grid">
-    <div class="glass-card form-card add-game-form">
-      <h2>Agregar Nuevo Videojuego</h2>
-      <form (ngSubmit)="agregarJuego()">
-        <div class="form-group glass-input-group">
-          <label>Título del Juego:</label>
-          <input type="text" [(ngModel)]="nuevoTitulo" name="titulo" placeholder="Ej. Need for Speed" required />
-        </div>
-        <div class="form-group glass-input-group">
-          <label>Plataforma:</label>
-          <input type="text" [(ngModel)]="nuevaPlataforma" name="plataforma" placeholder="Ej. PC" required />
-        </div>
-        <div class="form-group glass-input-group">
-          <label>Precio ($):</label>
-          <input type="number" [(ngModel)]="nuevoPrecio" name="precio" placeholder="0" required />
-        </div>
-        <div class="form-group glass-input-group">
-          <label>URL de Imagen:</label>
-          <input type="text" [(ngModel)]="nuevaImagen" name="imagen" placeholder="https://..." required />
-        </div>
-        <button type="submit" class="btn btn-full-width btn-full-green btn-save-game">Guardar en Base de Datos</button>
-      </form>
+  @if (cargandoRol) {
+    <div style="text-align: center; color: #00ed64; padding: 50px;">
+      <h2 style="font-family: 'Orbitron', sans-serif;">⏳ Verificando credenciales de administrador...</h2>
     </div>
+  } 
+  
+  @else if (esAdmin) {
+    <div class="grid-container dashboard-grid">
+      
+      <div class="glass-card form-card add-game-form">
+        <h2>Agregar Nuevo Videojuego</h2>
+        <form (ngSubmit)="agregarJuego()">
+          <div class="form-group glass-input-group">
+            <label>Título del Juego:</label>
+            <input type="text" [(ngModel)]="nuevoTitulo" name="titulo" placeholder="Ej. Need for Speed" required />
+          </div>
+          <div class="form-group glass-input-group">
+            <label>Plataforma:</label>
+            <input type="text" [(ngModel)]="nuevaPlataforma" name="plataforma" placeholder="Ej. PC" required />
+          </div>
+          <div class="form-group glass-input-group">
+            <label>Precio ($):</label>
+            <input type="number" [(ngModel)]="nuevoPrecio" name="precio" placeholder="0" required />
+          </div>
+          <div class="form-group glass-input-group">
+            <label>URL de Imagen:</label>
+            <input type="text" [(ngModel)]="nuevaImagen" name="imagen" placeholder="https://..." required />
+          </div>
+          <button type="submit" class="btn btn-full-width btn-save-game">Guardar en Base de Datos</button>
+        </form>
+      </div>
 
-    <div class="glass-card status-card">
-      <h3>Estado del Sistema:</h3>
-      <div class="status-indicator connected">{{ mensajeEstado }}</div>
+      <div class="glass-card form-card add-user-form">
+        <h2>Registrar Nuevo Usuario</h2>
+        <form (ngSubmit)="agregarUsuario()">
+          <div class="form-group glass-input-group">
+            <label>Nombre:</label>
+            <input type="text" [(ngModel)]="nuevoNombreUser" name="nombreUser" placeholder="Ej. Israel" required />
+          </div>
+          <div class="form-group glass-input-group">
+            <label>Email:</label>
+            <input type="email" [(ngModel)]="nuevoEmailUser" name="emailUser" placeholder="correo@uteq.edu.mx" required />
+          </div>
+          <div class="form-group glass-input-group">
+            <label>Contraseña:</label>
+            <input type="password" [(ngModel)]="nuevoPasswordUser" name="passwordUser" placeholder="Mínimo 6 caracteres" required />
+          </div>
+          <div class="form-group glass-input-group">
+            <label>Teléfono:</label>
+            <input type="tel" [(ngModel)]="nuevoTelefonoUser" name="telefonoUser" placeholder="555-000-0000" />
+          </div>
+          <div class="form-group glass-input-group">
+            <label>Rol Inicial:</label>
+            <select [(ngModel)]="nuevoRolUser" name="rolUser" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px; outline: none;">
+              <option value="cliente" style="color: black;">Cliente</option>
+              <option value="admin" style="color: black;">Administrador</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-full-width btn-save-game">Guardar Usuario</button>
+        </form>
+      </div>
+
+      @if (usuarioEditandoUid) {
+      <div class="glass-card form-card edit-user-form">
+        <h2>Editar Usuario</h2>
+        <form (ngSubmit)="actualizarUsuario()">
+          <div class="form-group glass-input-group">
+            <label>Nombre:</label>
+            <input type="text" [(ngModel)]="editarNombreUser" name="editarNombreUser" required />
+          </div>
+          <div class="form-group glass-input-group">
+            <label>Teléfono:</label>
+            <input type="tel" [(ngModel)]="editarTelefonoUser" name="editarTelefonoUser" />
+          </div>
+          <div class="form-group glass-input-group">
+            <label>Rol:</label>
+            <select [(ngModel)]="editarRolUser" name="editarRolUser" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px; outline: none;">
+              <option value="cliente" style="color: black;">Cliente</option>
+              <option value="admin" style="color: black;">Administrador</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-save-game" style="flex: 1;">Actualizar Usuario</button>
+            <button type="button" class="btn btn-danger-red" style="flex: 1;" (click)="cancelarEdicionUsuario()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+      }
+
+      <div class="glass-card table-card current-inventory">
+        <h2>Inventario Actual ({{ juegos.length }})</h2>
+        <div class="table-container glass-table-container">
+          <table class="glass-table">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>Título</th>
+                <th>Plataforma</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (juego of juegos; track juego.id) {
+                <tr>
+                  <td><img [src]="juego.imagen" alt="{{ juego.titulo }}" class="table-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" /></td>
+                  <td>{{ juego.titulo }}</td>
+                  <td>{{ juego.plataforma }}</td>
+                  <td class="table-price neon-text-green">${{ juego.precio }}</td>
+                  <td class="table-actions">
+                    <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarJuego(juego.id!)">Eliminar</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="glass-card table-card users-inventory">
+        <h2>Usuarios Registrados ({{ usuarios.length }})</h2>
+        <div class="table-container glass-table-container">
+          <table class="glass-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of usuarios; track user.uid) {
+                <tr>
+                  <td>{{ user.nombre }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    <span [style.color]="user.rol === 'admin' ? '#ffc107' : '#00ed64'" style="font-weight: bold; text-transform: uppercase;">
+                      {{ user.rol }}
+                    </span>
+                  </td>
+                  <td class="table-actions" style="display: flex; gap: 8px;">
+                    @if (user.rol === 'cliente') {
+                      <button type="button" class="btn" style="background: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.uid, 'admin')">Hacer Admin</button>
+                    }
+                    <button type="button" class="btn" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="iniciarEdicionUsuario(user)">Editar</button>
+                    @if (user.rol === 'admin') {
+                      <button type="button" class="btn" style="background: #ffc107; color: black; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.uid, 'cliente')">Quitar Admin</button>
+                    }
+                    <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarUsuario(user.uid)">Eliminar</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  } 
+  
+  @else {
+    <div class="glass-card" style="text-align: center; padding: 30px; margin-top: 20px; border: 1px solid rgba(255, 165, 0, 0.4);">
+      <h2 style="color: #ffb300; font-family: 'Orbitron', sans-serif;">🔒 Acceso Restringido</h2>
+      <p style="color: #ddd; font-size: 1.1rem; margin-top: 8px;">No eres administrador. No puedes ejecutar CRUD, pero sí puedes ver el catálogo.</p>
     </div>
 
     <div class="glass-card table-card current-inventory">
@@ -43,24 +181,20 @@
               <th>Título</th>
               <th>Plataforma</th>
               <th>Precio</th>
-              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             @for (juego of juegos; track juego.id) {
               <tr>
-                <td><img [src]="juego.imagen" alt="{{ juego.titulo }}" class="table-image" /></td>
+                <td><img [src]="juego.imagen" alt="{{ juego.titulo }}" class="table-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" /></td>
                 <td>{{ juego.titulo }}</td>
                 <td>{{ juego.plataforma }}</td>
                 <td class="table-price neon-text-green">${{ juego.precio }}</td>
-                <td class="table-actions">
-                  <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarJuego(juego.id!)">Eliminar</button>
-                </td>
               </tr>
             }
           </tbody>
         </table>
       </div>
     </div>
-  </div>
+  }
 </div>

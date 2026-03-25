@@ -36,6 +36,7 @@
   font-size: 2rem;
   font-weight: 800;
   margin-bottom: 10px;
+  color: #fff;
 }
 
 .institucional-notice {
@@ -64,7 +65,14 @@
   border: 1px solid rgba(0, 237, 100, 0.1);
   color: #fff;
   border-radius: 5px;
-  font-family: 'Poppins', sans-serif;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box; /* Evita que el input se salga de la tarjeta */
+}
+
+.glass-input-group input:focus {
+  border-color: #00ed64;
+  box-shadow: 0 0 8px rgba(0, 237, 100, 0.3);
 }
 
 /* Alerta de error */
@@ -75,34 +83,66 @@
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 20px;
+  font-size: 0.9rem;
 }
 
-/* Botones con brillo */
+/* ==========================================
+   CONTENEDOR DE BOTONES ARREGLADO
+   ========================================== */
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Separación perfecta entre los dos botones */
+  margin-top: 25px;
+}
+
+/* Estilo base para que ambos botones sean idénticos en tamaño */
+.btn-cta, .btn-register-redirect {
+  width: 100%;
+  padding: 12px;
+  border-radius: 5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+/* Botón de Ingresar (Verde Neón) */
 .btn-cta {
   background: #00ed64;
   color: #000;
   border: none;
-  font-weight: 700;
-  text-shadow: none;
-  margin-top: 15px;
 }
 
 .btn-cta:hover {
   box-shadow: 0 0 15px #00ed64;
+  transform: translateY(-2px);
 }
 
+/* Botón de Crear Cuenta (Contorno de Cristal) */
 .btn-register-redirect {
-  margin-top: 15px;
-  border-color: #00ed64;
+  background: transparent;
+  border: 1px solid #00ed64;
   color: #00ed64;
 }
 
 .btn-register-redirect:hover {
   background: rgba(0, 237, 100, 0.1);
+  box-shadow: 0 0 10px rgba(0, 237, 100, 0.2);
 }
 
 /* Animaciones */
 @keyframes floatFadeIn {
   from { opacity: 0; transform: translateY(20px) scale(0.9); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Utilidades de texto para el header */
+.neon-text-green { color: #00ed64; }
+.gradient-text { 
+  background: linear-gradient(90deg, #00ed64, #00a843); 
+  -webkit-background-clip: text; 
+  -webkit-text-fill-color: transparent; 
 }

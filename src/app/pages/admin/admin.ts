@@ -2,11 +2,16 @@ import { Component, OnInit, NgZone, inject, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
-// Importamos las funciones nativas de Firebase
-import { initializeApp, getApp, getApps, deleteApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
+// 1. IMPORTAMOS ANGULARFIRE: Para el CRUD en tiempo real
+import { Firestore, collection, addDoc, deleteDoc, doc, onSnapshot, updateDoc, setDoc } from '@angular/fire/firestore';
 
-// --- TUS NUEVAS CREDENCIALES (Proyecto: gamestore-75936) ---
+// 2. IMPORTAMOS TU SERVICIO (⚠️ Asegúrate de que la ruta sea correcta)
+import { AuthService } from '../../services/auth'; 
+
+// 3. Mantenemos estos nativos SOLO para el truco de crear usuarios nuevos sin sacarte de tu sesión
+import { initializeApp, deleteApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth'; 
+
 const firebaseConfig = {
   apiKey: "AIzaSyDfFRXH0bmUx_kAQCoCNKmKSrGfpr36hbQ",
   authDomain: "gamestore-75936.firebaseapp.com",
@@ -26,132 +31,232 @@ const firebaseConfig = {
 })
 export class Admin implements OnInit, OnDestroy {
   
+  // Variables de Videojuegos
   nuevoTitulo: string = '';
   nuevaPlataforma: string = '';
   nuevaImagen: string = '';
   nuevoPrecio: any = null;
-
   juegos: Videojuego[] = [];
-  mensajeEstado: string = 'Iniciando conexión...';
 
-  private app: any;
-  private db: any;
-  private unsubscribe: any;
+  // Variables de Usuarios
+  usuarios: Usuario[] = [];
+  nuevoNombreUser: string = ''; 
+  nuevoEmailUser: string = '';
+  nuevoPasswordUser: string = '';
+  nuevoRolUser: string = 'cliente'; 
+  nuevoTelefonoUser: string = '';
+
+  // Campos para editar usuario
+  usuarioEditandoUid: string | null = null;
+  editarNombreUser: string = '';
+  editarRolUser: string = 'cliente';
+  editarTelefonoUser: string = '';
+
+  // Seguridad
+  esAdmin: boolean = false;
+  cargandoRol: boolean = true;
+
+  // ==========================================
+  // INYECCIÓN GLOBAL
+  // ==========================================
+  private db = inject(Firestore);
   private ngZone = inject(NgZone);
-
-  constructor() {
-    // Usamos un nombre único 'AdminPanel' para asegurar que conectamos
-    // con ESTAS credenciales y no con las viejas de Angular
-    const nombreApp = 'AdminPanel';
-    
-    try {
-      // Si ya existe la conexión, la reiniciamos para evitar errores
-      if (getApps().some(app => app.name === nombreApp)) {
-        const appExistente = getApp(nombreApp);
-        deleteApp(appExistente); 
-      }
-      
-      // Iniciamos Firebase con tu nuevo proyecto
-      this.app = initializeApp(firebaseConfig, nombreApp);
-      this.db = getFirestore(this.app);
-      console.log("✅ Conexión establecida con: gamestore-75936");
-      
-    } catch (e) {
-      console.error("Error crítico iniciando Firebase:", e);
-      this.mensajeEstado = 'Error de conexión: ' + e;
-    }
-  }
+  private authService = inject(AuthService); // Usamos tu servicio profesional
+  
+  private authSubscription: any;
+  private unsubscribeJuegos: any;
+  private unsubscribeUsuarios: any;
 
   ngOnInit() {
     this.obtenerJuegos();
+    this.verificarRolActual();
+  }
+
+  async verificarRolActual() {
+    // Usamos el flujo de usuario de tu servicio, que ya está protegido y estable
+    this.authSubscription = this.authService.usuario$.subscribe(async (usuario) => {
+      if (!usuario) {
+        console.log("❌ AuthService no detecta sesión activa.");
+        this.ngZone.run(() => {
+          this.esAdmin = false;
+          this.cargandoRol = false;
+        });
+        return;
+      }
+
+      console.log("✅ AuthService detectó a:", usuario.email);
+      
+      try {
+        // Usamos tu función obtenerPerfil que ya está en auth.ts
+        const perfil = await this.authService.obtenerPerfil(usuario.uid);
+
+        this.ngZone.run(() => {
+          if (perfil && perfil['rol'] === 'admin') {
+            console.log("🛡️ Permisos de Administrador concedidos por AuthService.");
+            this.esAdmin = true;
+            this.obtenerUsuarios(); // Solo carga usuarios si es admin
+          } else {
+            console.log("🚫 Perfil encontrado, pero NO tiene rol='admin'.");
+            this.esAdmin = false;
+          }
+          this.cargandoRol = false;
+        });
+      } catch (error) {
+        console.error("Error pidiendo el perfil a AuthService:", error);
+        this.ngZone.run(() => { 
+          this.esAdmin = false;
+          this.cargandoRol = false; 
+        });
+      }
+    });
   }
 
   ngOnDestroy() {
-    // Cerramos la conexión si sales de la página
-    if (this.unsubscribe) {
-      this.unsubscribe();
-    }
+    if (this.authSubscription) this.authSubscription.unsubscribe();
+    if (this.unsubscribeJuegos) this.unsubscribeJuegos();
+    if (this.unsubscribeUsuarios) this.unsubscribeUsuarios();
   }
 
+  // ================= CRUD VIDEOJUEGOS =================
+
   obtenerJuegos() {
-    try {
-      const juegosRef = collection(this.db, 'videojuegos');
-      this.mensajeEstado = 'Buscando juegos en la nube...';
-
-      // Escuchamos los cambios en tiempo real
-      this.unsubscribe = onSnapshot(juegosRef, (snapshot) => {
-        this.ngZone.run(() => {
-          this.juegos = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Videojuego[];
-          
-          this.mensajeEstado = `✅ Conectado. Juegos encontrados: ${this.juegos.length}`;
-          console.log("🔥 Datos recibidos:", this.juegos);
-        });
-      }, (error) => {
-        console.error("Error leyendo datos:", error);
-        this.ngZone.run(() => {
-           this.mensajeEstado = 'Error leyendo: ' + error.message;
-        });
+    const juegosRef = collection(this.db, 'videojuegos');
+    this.unsubscribeJuegos = onSnapshot(juegosRef, (snapshot) => {
+      this.ngZone.run(() => {
+        this.juegos = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Videojuego[];
       });
-
-    } catch (e) {
-      console.error("Error en obtenerJuegos:", e);
-    }
+    });
   }
 
   async agregarJuego() {
-    if (!this.nuevoTitulo || !this.nuevaPlataforma) {
-      alert('⚠️ Faltan datos obligatorios');
-      return;
-    }
-
-    this.mensajeEstado = 'Guardando...';
-
+    if (!this.nuevoTitulo || !this.nuevaPlataforma) return;
     try {
-      const juegosRef = collection(this.db, 'videojuegos');
-      
-      await addDoc(juegosRef, {
+      await addDoc(collection(this.db, 'videojuegos'), {
         titulo: this.nuevoTitulo,
         plataforma: this.nuevaPlataforma,
         imagen: this.nuevaImagen || 'https://via.placeholder.com/150',
         precio: Number(this.nuevoPrecio) || 0
       });
-
-      this.resetFormulario();
-      // No hace falta poner mensaje de éxito aquí, 
-      // porque onSnapshot actualizará la tabla automáticamente
-
+      this.resetFormularioJuego();
     } catch (error) {
-      console.error("Error al guardar:", error);
-      alert('Error al guardar. Mira la consola.');
+      console.error("Error al guardar juego:", error);
     }
   }
 
   async borrarJuego(id: string) {
-    if (confirm('¿Eliminar juego?')) {
-      try {
-        const docRef = doc(this.db, 'videojuegos', id);
-        await deleteDoc(docRef);
-      } catch (error) {
-        console.error("Error al borrar:", error);
-      }
+    if (confirm('¿Eliminar este videojuego?')) {
+      await deleteDoc(doc(this.db, 'videojuegos', id));
     }
   }
 
-  resetFormulario() {
-    this.nuevoTitulo = '';
-    this.nuevaPlataforma = '';
-    this.nuevaImagen = '';
-    this.nuevoPrecio = null;
+  // ================= CRUD USUARIOS =================
+
+  obtenerUsuarios() {
+    const usuariosRef = collection(this.db, 'usuarios');
+    this.unsubscribeUsuarios = onSnapshot(usuariosRef, (snapshot) => {
+      this.ngZone.run(() => {
+        this.usuarios = snapshot.docs.map(doc => ({
+          uid: doc.id,
+          ...doc.data()
+        })) as Usuario[];
+      });
+    });
+  }
+
+  async agregarUsuario() {
+    if (!this.nuevoEmailUser || !this.nuevoNombreUser || !this.nuevoPasswordUser) {
+      alert('⚠️ Faltan datos obligatorios');
+      return;
+    }
+
+    try {
+      const tempAppName = 'TempAuthApp_' + new Date().getTime();
+      const tempApp = initializeApp(firebaseConfig, tempAppName);
+      const tempAuth = getAuth(tempApp);
+
+      const credenciales = await createUserWithEmailAndPassword(tempAuth, this.nuevoEmailUser, this.nuevoPasswordUser);
+      const uidGenerado = credenciales.user.uid;
+
+      await signOut(tempAuth);
+      await deleteApp(tempApp);
+
+      await setDoc(doc(this.db, 'usuarios', uidGenerado), {
+        nombre: this.nuevoNombreUser,
+        email: this.nuevoEmailUser,
+        rol: this.nuevoRolUser,
+        telefono: this.nuevoTelefonoUser,
+        fechaRegistro: new Date()
+      });
+
+      alert('✅ ¡Usuario creado con éxito en la base de datos!');
+      this.resetFormularioUsuario();
+
+    } catch (error: any) {
+      console.error("Error al crear usuario:", error);
+      if (error.code === 'auth/email-already-in-use') alert('❌ Ese correo ya está registrado.');
+      else if (error.code === 'auth/weak-password') alert('❌ La contraseña debe tener al menos 6 caracteres.');
+      else alert('❌ Error: ' + error.message);
+    }
+  }
+
+  async cambiarRol(uid: string, nuevoRol: string) {
+    await updateDoc(doc(this.db, 'usuarios', uid), { rol: nuevoRol });
+  }
+
+  iniciarEdicionUsuario(user: Usuario) {
+    this.usuarioEditandoUid = user.uid;
+    this.editarNombreUser = user.nombre;
+    this.editarRolUser = user.rol;
+    this.editarTelefonoUser = user.telefono || '';
+  }
+
+  async actualizarUsuario() {
+    if (!this.usuarioEditandoUid) return;
+    if (!this.editarNombreUser) {
+      alert('⚠️ El nombre es obligatorio');
+      return;
+    }
+
+    try {
+      await updateDoc(doc(this.db, 'usuarios', this.usuarioEditandoUid), {
+        nombre: this.editarNombreUser,
+        rol: this.editarRolUser,
+        telefono: this.editarTelefonoUser || ''
+      });
+      this.cancelarEdicionUsuario();
+      alert('✅ Usuario actualizado correctamente');
+    } catch (error) {
+      console.error('Error al actualizar usuario:', error);
+      alert('❌ No se pudo actualizar el usuario.');
+    }
+  }
+
+  cancelarEdicionUsuario() {
+    this.usuarioEditandoUid = null;
+    this.editarNombreUser = '';
+    this.editarRolUser = 'cliente';
+    this.editarTelefonoUser = '';
+  }
+
+  async borrarUsuario(uid: string) {
+    if (confirm('¿Estás seguro de eliminar este usuario?')) {
+      await deleteDoc(doc(this.db, 'usuarios', uid));
+    }
+  }
+
+  // ================= RESETS =================
+
+  resetFormularioJuego() {
+    this.nuevoTitulo = ''; this.nuevaPlataforma = ''; this.nuevaImagen = ''; this.nuevoPrecio = null;
+  }
+
+  resetFormularioUsuario() {
+    this.nuevoNombreUser = ''; this.nuevoEmailUser = ''; this.nuevoPasswordUser = ''; this.nuevoRolUser = 'cliente'; this.nuevoTelefonoUser = '';
   }
 }
 
-interface Videojuego {
-  id?: string;
-  titulo: string;
-  plataforma: string;
-  imagen: string;
-  precio: number;
-}
+interface Videojuego { id?: string; titulo: string; plataforma: string; imagen: string; precio: number; }
+interface Usuario { uid: string; nombre: string; email: string; rol: string; telefono?: string; }

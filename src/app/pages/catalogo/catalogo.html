@@ -12,7 +12,7 @@
   <div class="grid-container games-grid">
     @for (juego of juegosFiltrados; track juego.id) {
       <div class="glass-card game-card">
-        <img [src]="juego.imagenUrl" [alt]="juego.titulo" class="card-image" />
+        <img [src]="juego.imagen" [alt]="juego.titulo" class="card-image" />
         <div class="card-content">
           <h2 class="card-title">{{ juego.titulo }}</h2>
           <div class="card-metadata">
