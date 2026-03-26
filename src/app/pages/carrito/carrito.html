@@ -67,12 +67,42 @@
     </div>
   </div>
   
-  <!-- Modal de éxito - AHORA SIEMPRE VISIBLE CUANDO mostrarModal ES TRUE -->
+  <!-- Modal de éxito -->
   <div class="modal-overlay" *ngIf="mostrarModal">
     <div class="modal-contenido">
       <div class="modal-icono">✅</div>
       <h3>{{mensajeModal}}</h3>
       <button (click)="cerrarModal()" class="btn-cerrar-modal">Continuar Comprando</button>
+    </div>
+  </div>
+  
+  <!-- Modal de verificación biométrica -->
+  <div class="modal-overlay" *ngIf="mostrarModalBiometrico">
+    <div class="modal-contenido modal-biometrico">
+      <div class="modal-icono">🔐</div>
+      <h3>Verificación Biométrica</h3>
+      <p>Confirma tu identidad con huella digital o reconocimiento facial</p>
+      
+      <div class="biometrico-actions">
+        <button 
+          (click)="confirmarConBiometrico()" 
+          class="btn-biometrico" 
+          [disabled]="verificandoBiometrico">
+          <span *ngIf="!verificandoBiometrico">🖐️ Verificar con Huella</span>
+          <span *ngIf="verificandoBiometrico">⏳ Verificando...</span>
+        </button>
+        
+        <button 
+          *ngIf="!biometricoRegistrado"
+          (click)="registrarBiometrico()" 
+          class="btn-registrar">
+          📱 Registrar mi dispositivo
+        </button>
+        
+        <button (click)="cancelarBiometrico()" class="btn-cancelar">
+          ❌ Cancelar
+        </button>
+      </div>
     </div>
   </div>
 </div>

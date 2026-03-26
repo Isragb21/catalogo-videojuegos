@@ -268,3 +268,122 @@
 .btn-cerrar-modal:active {
   transform: translateY(0);
 }
+
+/* ========================================== */
+/* ESTILOS DEL MODAL BIOMÉTRICO */
+/* ========================================== */
+
+.modal-biometrico {
+  max-width: 450px;
+}
+
+.modal-biometrico p {
+  color: #aaa;
+  margin-bottom: 25px;
+  font-size: 0.9rem;
+}
+
+.biometrico-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.btn-biometrico {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border: none;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-biometrico:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 198, 255, 0.4);
+}
+
+.btn-biometrico:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-registrar {
+  background: transparent;
+  border: 2px solid #00ff88;
+  color: #00ff88;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-registrar:hover {
+  background: #00ff88;
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+}
+
+.btn-cancelar {
+  background: transparent;
+  border: 2px solid #ff4c4c;
+  color: #ff4c4c;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-cancelar:hover {
+  background: #ff4c4c;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(255, 76, 76, 0.4);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .carrito-grid-header {
+    display: none;
+  }
+  
+  .carrito-item {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .item-info {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .carrito-resumen {
+    text-align: center;
+  }
+  
+  .total {
+    justify-content: center;
+  }
+  
+  .modal-biometrico {
+    width: 90%;
+    padding: 25px;
+  }
+  
+  .modal-biometrico h3 {
+    font-size: 1.1rem;
+  }
+}
