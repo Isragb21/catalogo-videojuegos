@@ -7,14 +7,18 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // El guardián observa si hay un usuario conectado
   return authService.usuario$.pipe(
     take(1),
     map(usuario => {
-      if (usuario) {
-        return true; // Si hay sesión, lo deja pasar a la vista (Perfil o Admin)
+      // 1. Verificamos si pasó la validación del código 2FA en el navegador
+      const aprobado2FA = localStorage.getItem('2fa_aprobado') === 'true';
+
+      // 2. Solo dejamos pasar si existe el usuario Y aprobó el 2FA
+      if (usuario && aprobado2FA) {
+        return true; 
       } else {
-        router.navigate(['/login']); // Si no hay sesión, lo patea al Login
+        // Si no está autenticado o no ha puesto el código, al login
+        router.navigate(['/login']); 
         return false;
       }
     })

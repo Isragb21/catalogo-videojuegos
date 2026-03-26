@@ -1,16 +1,17 @@
 import { inject, Injectable } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, authState } from '@angular/fire/auth';
 import { Firestore, collection, setDoc, doc, collectionData, deleteDoc, getDoc } from '@angular/fire/firestore';
+import { Router } from '@angular/router'; // Importamos Router
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   
   private auth = inject(Auth);
   private firestore = inject(Firestore);
+  private router = inject(Router); // Inyectamos Router
 
   usuario$ = authState(this.auth);
 
-  // 🔥 AQUÍ ESTÁ LA CORRECCIÓN: Ahora acepta los 4 datos (email, pass, nombre, telefono)
   async registro(email: string, pass: string, nombre: string, telefono: string) {
     const credenciales = await createUserWithEmailAndPassword(this.auth, email, pass);
     const uid = credenciales.user.uid;
@@ -19,9 +20,9 @@ export class AuthService {
     return setDoc(usuarioRef, {
       uid: uid,
       email: email,
-      nombre: nombre,       // Se guarda el nombre
-      telefono: telefono,   // Se guarda el teléfono
-      rol: 'usuario',       // Entra como usuario normal por defecto
+      nombre: nombre,
+      telefono: telefono,
+      rol: 'usuario',
       fechaRegistro: new Date().toISOString()
     });
   }
@@ -30,8 +31,15 @@ export class AuthService {
     return signInWithEmailAndPassword(this.auth, email, pass);
   }
 
-  logout() {
-    return signOut(this.auth);
+  // ✅ CORRECCIÓN: Ahora limpia el 2FA y redirige
+  async logout() {
+    try {
+      localStorage.removeItem('2fa_aprobado'); // Limpiamos el acceso 2FA
+      await signOut(this.auth);               // Cerramos sesión en Firebase
+      this.router.navigate(['/login']);       // Mandamos al login
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
   }
 
   async obtenerPerfil(uid: string) {

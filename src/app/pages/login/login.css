@@ -1,4 +1,4 @@
-/* Contenedor principal centrado a pantalla completa */
+/* Contenedor principal */
 .login-page-wrapper {
   position: fixed;
   top: 0;
@@ -12,7 +12,7 @@
   padding: 20px;
 }
 
-/* Carta de cristal con resplandor Premium */
+/* Tarjeta de autenticacion */
 .login-glass-card {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(15px);
@@ -45,7 +45,7 @@
   margin-bottom: 30px;
 }
 
-/* Campos de entrada de cristal */
+/* Entradas de formulario */
 .glass-input-group {
   margin-bottom: 20px;
   text-align: left;
@@ -67,7 +67,7 @@
   border-radius: 5px;
   font-family: inherit;
   outline: none;
-  box-sizing: border-box; /* Evita que el input se salga de la tarjeta */
+  box-sizing: border-box; /* Mantiene el input dentro del contenedor */
 }
 
 .glass-input-group input:focus {
@@ -86,17 +86,15 @@
   font-size: 0.9rem;
 }
 
-/* ==========================================
-   CONTENEDOR DE BOTONES ARREGLADO
-   ========================================== */
+/* Acciones del formulario */
 .form-actions {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Separación perfecta entre los dos botones */
+  gap: 15px; /* Espaciado entre botones */
   margin-top: 25px;
 }
 
-/* Estilo base para que ambos botones sean idénticos en tamaño */
+/* Estilos base de botones */
 .btn-cta, .btn-register-redirect {
   width: 100%;
   padding: 12px;
@@ -109,7 +107,7 @@
   font-family: inherit;
 }
 
-/* Botón de Ingresar (Verde Neón) */
+/* Boton principal */
 .btn-cta {
   background: #00ed64;
   color: #000;
@@ -121,7 +119,7 @@
   transform: translateY(-2px);
 }
 
-/* Botón de Crear Cuenta (Contorno de Cristal) */
+/* Boton secundario */
 .btn-register-redirect {
   background: transparent;
   border: 1px solid #00ed64;
@@ -139,10 +137,24 @@
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Utilidades de texto para el header */
+/* Utilidades de texto */
 .neon-text-green { color: #00ed64; }
 .gradient-text { 
   background: linear-gradient(90deg, #00ed64, #00a843); 
   -webkit-background-clip: text; 
   -webkit-text-fill-color: transparent; 
+}
+
+/* Capa superpuesta para autenticacion 2FA */
+.overlay-2fa {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(18, 18, 18, 0.98) !important;
+  z-index: 999999 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
 }

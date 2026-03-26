@@ -1,36 +1,47 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth'; // Asegúrate de que la ruta sea correcta
+import { AuthService } from '../../services/auth'; 
+import { QRCodeComponent } from 'angularx-qrcode';
+import * as OTPAuth from 'otpauth';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, QRCodeComponent],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login {
+export class Login implements OnInit {
   email = '';
   password = '';
   confirmPassword = ''; 
   modoRegistro = false; 
   mensajeError = '';
 
-  // 🔥 NUEVAS VARIABLES PARA EL REGISTRO
   nombre = '';
   telefono = '';
 
+  modo2FA = false;     
+  secreto = '';        
+  qrCodeUrl = '';      
+  codigo2FA = '';      
+  mensaje2FA = '';     
+  correoActual = '';   
+
   private router = inject(Router);
-  private authService = inject(AuthService); // Inyectamos tu servicio profesional
+  private authService = inject(AuthService);
+
+  ngOnInit() {
+    localStorage.removeItem('2fa_aprobado');
+  }
 
   toggleModo() {
     this.modoRegistro = !this.modoRegistro;
     this.mensajeError = '';
     this.password = '';
     this.confirmPassword = '';
-    // Limpiamos los campos nuevos al cambiar de modo
     this.nombre = '';
     this.telefono = '';
   }
@@ -38,65 +49,91 @@ export class Login {
   async procesarFormulario() {
     this.mensajeError = '';
 
-    // Limpieza de datos
     const emailLimpio = this.email.trim().toLowerCase();
     const passLimpio = this.password.trim();
     const nombreLimpio = this.nombre.trim();
     const telLimpio = this.telefono.trim();
 
-    // Validaciones básicas
     if (!emailLimpio.endsWith('@uteq.edu.mx')) {
       this.mensajeError = 'Solo correos @uteq.edu.mx';
       return; 
     }
 
     if (passLimpio.length < 6) {
-      this.mensajeError = 'Mínimo 6 caracteres';
+      this.mensajeError = 'Minimo 6 caracteres';
       return;
     }
 
     try {
       if (!this.modoRegistro) {
-        // ================= LOGIN USANDO TU SERVICIO =================
-        console.log("⏳ Iniciando sesión vía AuthService...");
         await this.authService.login(emailLimpio, passLimpio);
-        
-        console.log("✅ Sesión iniciada. El AuthService ya notificó al Guardián.");
-        this.router.navigate(['/inicio']); 
+        this.correoActual = emailLimpio;
+        this.preparar2FA(emailLimpio);
 
       } else {
-        // ================= REGISTRO USANDO TU SERVICIO =================
-        
-        // Validación extra: Obligar a que pongan nombre y teléfono al registrarse
         if (!nombreLimpio || !telLimpio) {
-          this.mensajeError = 'Por favor, llena tu nombre y teléfono.';
+          this.mensajeError = 'Por favor, llena tu nombre y telefono.';
           return;
         }
-
         if (passLimpio !== this.confirmPassword.trim()) {
-          this.mensajeError = 'Las contraseñas no coinciden';
+          this.mensajeError = 'Las contrasenas no coinciden';
           return;
         }
 
-        console.log("⏳ Creando cuenta vía AuthService...");
-        
-        // 🔥 AQUÍ LE PASAMOS LOS 4 DATOS AL SERVICIO
         await this.authService.registro(emailLimpio, passLimpio, nombreLimpio, telLimpio);
-        
-        console.log("✅ Cuenta creada y perfil guardado en Firestore.");
-        this.router.navigate(['/inicio']); 
+        this.correoActual = emailLimpio;
+        this.preparar2FA(emailLimpio);
       }
 
     } catch (error: any) {
-      console.error("❌ Error:", error);
-      // Manejo de errores amigable
       if (error.code === 'auth/invalid-credential') {
-        this.mensajeError = 'Correo o contraseña incorrectos.';
+        this.mensajeError = 'Correo o contrasena incorrectos.';
       } else if (error.code === 'auth/email-already-in-use') {
-        this.mensajeError = 'Este correo ya está registrado.';
+        this.mensajeError = 'Este correo ya esta registrado.';
       } else {
-        this.mensajeError = 'Ocurrió un error inesperado.';
+        this.mensajeError = 'Ocurrio un error inesperado.';
       }
+    }
+  }
+
+  preparar2FA(emailUsuario: string) {
+    this.modo2FA = true; 
+    
+    const totp = new OTPAuth.TOTP({
+      issuer: 'GameStore',
+      label: emailUsuario,
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30,
+      secret: new OTPAuth.Secret({ size: 20 }) 
+    });
+    
+    this.secreto = totp.secret.base32;
+    this.qrCodeUrl = totp.toString(); 
+    
+    this.mensaje2FA = 'Escanea este QR desde tu app Microsoft Authenticator.';
+  }
+
+  validarCodigo2FA() {
+    const tokenLimpio = this.codigo2FA.replace(/\s/g, '');
+
+    const totp = new OTPAuth.TOTP({
+      issuer: 'GameStore',
+      label: this.correoActual,
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30,
+      secret: OTPAuth.Secret.fromBase32(this.secreto)
+    });
+
+    const delta = totp.validate({ token: tokenLimpio, window: 3 });
+
+    if (delta !== null) {
+      localStorage.setItem('2fa_aprobado', 'true');
+      this.router.navigate(['/inicio']); 
+    } else {
+      this.mensaje2FA = 'Codigo incorrecto o expirado. Intenta de nuevo.';
+      this.codigo2FA = ''; 
     }
   }
 }
