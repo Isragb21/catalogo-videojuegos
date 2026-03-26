@@ -30,8 +30,8 @@ export class CarritoComponent implements OnInit {
   modalExito: boolean = false;
   
   // Variables para huella digital
-  mostrarModalBiometrico: boolean = false;
   mostrarModalRegistro: boolean = false;
+  mostrarModalVerificacion: boolean = false;
   biometricoDisponible: boolean = false;
   tieneHuellaRegistrada: boolean = false;
   verificandoBiometrico: boolean = false;
@@ -43,7 +43,6 @@ export class CarritoComponent implements OnInit {
       this.cdr.detectChanges();
     });
     
-    // Verificar disponibilidad de biometría
     this.verificarBiometrico();
   }
 
@@ -73,22 +72,18 @@ export class CarritoComponent implements OnInit {
       return;
     }
 
-    // Verificar si la biometría está disponible
     if (!this.biometricoDisponible) {
-      // Si no hay biometría disponible, pago normal
       await this.ejecutarPago();
       return;
     }
 
-    // Si hay biometría pero no tiene huella registrada, mostrar modal de registro
     if (!this.tieneHuellaRegistrada) {
       this.mostrarModalRegistro = true;
       this.cdr.detectChanges();
       return;
     }
 
-    // Si ya tiene huella registrada, solicitar verificación
-    this.mostrarModalBiometrico = true;
+    this.mostrarModalVerificacion = true;
     this.cdr.detectChanges();
   }
 
@@ -100,17 +95,16 @@ export class CarritoComponent implements OnInit {
     
     if (resultado.success) {
       this.tieneHuellaRegistrada = true;
+      this.mostrarModalRegistro = false;
       this.mensajeModal = resultado.message;
       this.modalExito = true;
       this.mostrarModal = true;
-      this.mostrarModalRegistro = false;
       this.cdr.detectChanges();
       
-      // Después de registrar, pedir verificación para el pago actual
       setTimeout(() => {
-        this.mostrarModalBiometrico = true;
+        this.mostrarModalVerificacion = true;
         this.cdr.detectChanges();
-      }, 1500);
+      }, 2000);
     } else {
       this.mensajeModal = resultado.message;
       this.modalExito = false;
@@ -122,7 +116,6 @@ export class CarritoComponent implements OnInit {
 
   cancelarRegistro() {
     this.mostrarModalRegistro = false;
-    // Si cancela el registro, proceder con pago normal
     this.ejecutarPago();
   }
 
@@ -135,26 +128,25 @@ export class CarritoComponent implements OnInit {
     this.verificandoBiometrico = false;
     
     if (resultado.success) {
-      this.mostrarModalBiometrico = false;
+      this.mostrarModalVerificacion = false;
       await this.ejecutarPago();
     } else {
       this.mensajeModal = resultado.message;
       this.modalExito = false;
       this.mostrarModal = true;
-      this.mostrarModalBiometrico = false;
+      this.mostrarModalVerificacion = false;
       this.cdr.detectChanges();
     }
   }
 
-  cancelarBiometrico() {
-    this.mostrarModalBiometrico = false;
+  cancelarVerificacion() {
+    this.mostrarModalVerificacion = false;
   }
 
   async ejecutarPago() {
     this.procesando = true;
     this.cdr.detectChanges();
     
-    // Simulación de pago
     setTimeout(() => {
       this.procesando = false;
       this.modalExito = true;

@@ -6,17 +6,14 @@
     </button>
   </div>
   
-  <!-- Carrito vacío -->
   <div *ngIf="carrito.length === 0" class="carrito-vacio">
     <div class="vacio-icono">🛍️</div>
     <p>Tu carrito está vacío</p>
     <a routerLink="/catalogo" class="btn-ver-catalogo">Explorar Catálogo</a>
   </div>
   
-  <!-- Carrito con productos -->
   <div *ngIf="carrito.length > 0">
     <div class="carrito-items">
-      <!-- Encabezados -->
       <div class="carrito-grid-header">
         <span>Producto</span>
         <span>Cantidad</span>
@@ -24,7 +21,6 @@
         <span></span>
       </div>
       
-      <!-- Lista de productos -->
       <div *ngFor="let item of carrito" class="carrito-item">
         <div class="item-info">
           <img [src]="item.imagen" [alt]="item.titulo" class="item-imagen">
@@ -51,7 +47,6 @@
       </div>
     </div>
     
-    <!-- Resumen y pago -->
     <div class="carrito-resumen">
       <div class="total">
         <span class="total-label">TOTAL:</span>
@@ -76,43 +71,31 @@
     </div>
   </div>
   
-  <!-- Modal de REGISTRO de huella digital -->
+  <!-- Modal de REGISTRO -->
   <div class="modal-overlay" *ngIf="mostrarModalRegistro">
     <div class="modal-contenido modal-biometrico">
       <div class="modal-icono">🖐️</div>
       <h3>Registrar Huella Digital</h3>
-      <p>Para mayor seguridad, registra tu huella digital. Podrás usarla en futuras compras.</p>
-      
+      <p>Coloca tu dedo en el sensor para registrar tu huella.</p>
       <div class="biometrico-actions">
-        <button (click)="registrarHuella()" class="btn-biometrico">
-          📱 Registrar mi huella
-        </button>
-        <button (click)="cancelarRegistro()" class="btn-cancelar">
-          ❌ Cancelar (pagar sin huella)
-        </button>
+        <button (click)="registrarHuella()" class="btn-biometrico">📱 Registrar mi huella</button>
+        <button (click)="cancelarRegistro()" class="btn-cancelar">❌ Omitir (pagar sin huella)</button>
       </div>
     </div>
   </div>
   
-  <!-- Modal de VERIFICACIÓN biométrica -->
-  <div class="modal-overlay" *ngIf="mostrarModalBiometrico">
+  <!-- Modal de VERIFICACIÓN -->
+  <div class="modal-overlay" *ngIf="mostrarModalVerificacion">
     <div class="modal-contenido modal-biometrico">
       <div class="modal-icono">🔐</div>
       <h3>Verificación Biométrica</h3>
-      <p>Confirma tu identidad con huella digital</p>
-      
+      <p>Coloca tu dedo en el sensor para confirmar tu identidad</p>
       <div class="biometrico-actions">
-        <button 
-          (click)="confirmarConBiometrico()" 
-          class="btn-biometrico" 
-          [disabled]="verificandoBiometrico">
+        <button (click)="confirmarConBiometrico()" class="btn-biometrico" [disabled]="verificandoBiometrico">
           <span *ngIf="!verificandoBiometrico">🖐️ Verificar con Huella</span>
           <span *ngIf="verificandoBiometrico">⏳ Verificando...</span>
         </button>
-        
-        <button (click)="cancelarBiometrico()" class="btn-cancelar">
-          ❌ Cancelar
-        </button>
+        <button (click)="cancelarVerificacion()" class="btn-cancelar">❌ Cancelar</button>
       </div>
     </div>
   </div>
