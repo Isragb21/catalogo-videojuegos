@@ -1,5 +1,7 @@
 {
-  "outputDirectory": "dist/browser",
+  "version": 2,
+  "public": true,
+  "outputDirectory": "dist/catalogo-videojuegos/browser",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
