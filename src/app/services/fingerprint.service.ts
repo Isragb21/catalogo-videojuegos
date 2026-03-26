@@ -6,41 +6,30 @@ import { Injectable } from '@angular/core';
 })
 export class FingerprintService {
   
-  // Verificar si el dispositivo soporta WebAuthn
   isWebAuthnSupported(): boolean {
     return typeof window !== 'undefined' && 
            window.PublicKeyCredential !== undefined &&
            typeof window.PublicKeyCredential === 'function';
   }
 
-  // Verificar si el dispositivo tiene biométricos disponibles
   async isBiometricAvailable(): Promise<boolean> {
     if (!this.isWebAuthnSupported()) return false;
-    
     try {
       const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
       return available;
     } catch (error) {
-      console.error('Error verificando biométricos:', error);
       return false;
     }
   }
 
-  // Registrar dispositivo con huella digital
-  async registerFingerprint(userId: string, userName: string): Promise<{ success: boolean; message: string }> {
+  async registerFingerprint(userId: string, userName: string): Promise<{ success: boolean; message: string; credentialId?: string }> {
     if (!this.isWebAuthnSupported()) {
-      return {
-        success: false,
-        message: 'Tu navegador no soporta autenticación biométrica'
-      };
+      return { success: false, message: 'Tu navegador no soporta autenticación biométrica' };
     }
 
     const available = await this.isBiometricAvailable();
     if (!available) {
-      return {
-        success: false,
-        message: 'Tu dispositivo no tiene huella digital configurada. Ve a Configuración > Seguridad y agrega tu huella primero.'
-      };
+      return { success: false, message: 'Configura tu huella en Windows: Configuración > Cuentas > Opciones de inicio de sesión' };
     }
 
     try {
@@ -49,82 +38,76 @@ export class FingerprintService {
 
       const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
         challenge: challenge,
-        rp: {
-          name: 'GameStore',
-          id: window.location.hostname,
-        },
-        user: {
-          id: new TextEncoder().encode(userId),
-          name: userName,
-          displayName: userName,
+        rp: { name: 'GameStore', id: window.location.hostname },
+        user: { 
+          id: new TextEncoder().encode(userId), 
+          name: userName, 
+          displayName: userName 
         },
         pubKeyCredParams: [
-          { alg: -7, type: 'public-key' }, // ES256
-          { alg: -257, type: 'public-key' }, // RS256
+          { alg: -7, type: 'public-key' },
+          { alg: -257, type: 'public-key' }
         ],
         authenticatorSelection: {
           authenticatorAttachment: 'platform',
           userVerification: 'required',
+          requireResidentKey: false
         },
         timeout: 60000,
+        attestation: 'none'
       };
 
       const credential = await navigator.credentials.create({
         publicKey: publicKeyCredentialCreationOptions
-      });
+      }) as any;
 
-      if (credential) {
-        // Guardar que el usuario registró su huella
+      if (credential && credential.id) {
+        // Guardar la credencial completa
         const credentialData = {
-          id: (credential as any).id,
+          id: credential.id,
+          rawId: this.arrayBufferToBase64(credential.rawId),
           userId: userId,
           registeredAt: new Date().toISOString()
         };
         localStorage.setItem('fingerprint_registered', JSON.stringify(credentialData));
-        return {
-          success: true,
-          message: '✅ ¡Huella digital registrada con éxito!'
+        console.log('Huella registrada con ID:', credential.id);
+        return { 
+          success: true, 
+          message: '✅ ¡Huella registrada con éxito!',
+          credentialId: credential.id
         };
       }
-      return {
-        success: false,
-        message: 'No se pudo registrar la huella'
-      };
+      return { success: false, message: 'No se pudo registrar la huella' };
     } catch (error: any) {
       console.error('Error registrando huella:', error);
-      
       if (error.name === 'NotAllowedError') {
-        return {
-          success: false,
-          message: 'Registro cancelado por el usuario'
-        };
-      } else {
-        return {
-          success: false,
-          message: 'Error al registrar: ' + (error.message || 'intenta nuevamente')
-        };
+        return { success: false, message: 'Registro cancelado por el usuario' };
+      } else if (error.name === 'InvalidStateError') {
+        return { success: false, message: 'Ya existe una credencial. Reinicia el navegador y prueba de nuevo.' };
       }
+      return { success: false, message: 'Error al registrar: ' + (error.message || 'intenta nuevamente') };
     }
   }
 
-  // Verificar con huella digital
   async verifyFingerprint(): Promise<{ success: boolean; message: string }> {
     const registered = this.getFingerprintRegistration();
     if (!registered) {
-      return {
-        success: false,
-        message: '🔐 Primero debes registrar tu huella digital en tu perfil'
-      };
+      return { success: false, message: 'Primero registra tu huella' };
     }
 
     if (!this.isWebAuthnSupported()) {
-      return {
-        success: false,
-        message: 'Tu navegador no soporta autenticación biométrica'
-      };
+      return { success: false, message: 'Tu navegador no soporta autenticación biométrica' };
     }
 
     try {
+      // Convertir el ID guardado a ArrayBuffer
+      let credentialId: ArrayBuffer;
+      if (registered.rawId) {
+        credentialId = this.base64ToArrayBuffer(registered.rawId);
+      } else {
+        credentialId = this.base64ToArrayBuffer(registered.id);
+      }
+
       const challenge = new Uint8Array(32);
       crypto.getRandomValues(challenge);
 
@@ -134,7 +117,7 @@ export class FingerprintService {
         userVerification: 'required',
         rpId: window.location.hostname,
         allowCredentials: [{
-          id: this.base64ToArrayBuffer(registered.id),
+          id: credentialId,
           type: 'public-key'
         }]
       };
@@ -144,53 +127,51 @@ export class FingerprintService {
       });
 
       if (credential) {
-        return {
-          success: true,
-          message: '✅ Verificación biométrica exitosa'
-        };
+        console.log('Verificación exitosa');
+        return { success: true, message: '✅ Verificación exitosa' };
       } else {
-        return {
-          success: false,
-          message: 'Verificación cancelada'
-        };
+        return { success: false, message: 'Verificación cancelada' };
       }
     } catch (error: any) {
       console.error('Error en verificación:', error);
-      
       if (error.name === 'NotAllowedError') {
-        return {
-          success: false,
-          message: 'Verificación cancelada por el usuario'
-        };
-      } else {
-        return {
-          success: false,
-          message: 'Error al verificar: coloca tu huella en el sensor'
-        };
+        return { success: false, message: 'Verificación cancelada' };
+      } else if (error.name === 'InvalidStateError') {
+        return { success: false, message: 'Credencial no válida. Vuelve a registrar tu huella.' };
       }
+      return { success: false, message: 'Coloca tu dedo en el sensor' };
     }
   }
 
-  // Verificar si ya tiene huella registrada
   hasFingerprintRegistered(): boolean {
     return localStorage.getItem('fingerprint_registered') !== null;
   }
 
-  // Obtener registro de huella
   getFingerprintRegistration(): any {
     const data = localStorage.getItem('fingerprint_registered');
     if (data) {
-      return JSON.parse(data);
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        return null;
+      }
     }
     return null;
   }
 
-  // Eliminar registro de huella
   clearFingerprintRegistration() {
     localStorage.removeItem('fingerprint_registered');
   }
 
-  // Utilidad: convertir base64 a ArrayBuffer
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
   private base64ToArrayBuffer(base64: string): ArrayBuffer {
     const binaryString = atob(base64);
     const bytes = new Uint8Array(binaryString.length);

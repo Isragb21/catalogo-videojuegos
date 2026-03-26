@@ -119,6 +119,16 @@ export class CarritoComponent implements OnInit {
     this.ejecutarPago();
   }
 
+  // ✅ MÉTODO PARA LIMPIAR REGISTRO DE HUELLA
+  limpiarRegistroHuella() {
+    this.fingerprintService.clearFingerprintRegistration();
+    this.tieneHuellaRegistrada = false;
+    this.mensajeModal = '🗑️ Registro de huella eliminado. Puedes volver a registrarlo.';
+    this.modalExito = true;
+    this.mostrarModal = true;
+    this.cdr.detectChanges();
+  }
+
   async confirmarConBiometrico() {
     this.verificandoBiometrico = true;
     this.cdr.detectChanges();
