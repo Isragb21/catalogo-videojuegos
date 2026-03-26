@@ -19,9 +19,15 @@
             <span class="platform-badge">{{ juego.plataforma }}</span>
             <span class="price-tag neon-text-green">${{ juego.precio }}</span>
           </div>
-        <div class="card-actions">
-          <button class="btn btn-outline-green btn-view-details">Ver detalles</button>
-        </div>
+          <div class="card-actions">
+            <button class="btn btn-outline-green btn-view-details">Ver detalles</button>
+            <button 
+              [id]="'btn-' + juego.id"
+              (click)="agregarAlCarrito(juego)" 
+              class="btn btn-primary btn-add-cart">
+              🛒 AGREGAR
+            </button>
+          </div>
         </div>
       </div>
     }

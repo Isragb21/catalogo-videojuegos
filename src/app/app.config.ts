@@ -7,7 +7,7 @@ import { initializeApp, provideFirebaseApp, getApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { provideFirestore } from '@angular/fire/firestore';
 
-// 🔥 IMPORTACIÓN CLAVE PARA EL PLAN C (Bypass de Offline)
+//  IMPORTACIÓN CLAVE PARA EL PLAN C (Bypass de Offline)
 import { initializeFirestore } from 'firebase/firestore'; 
 
 export const appConfig: ApplicationConfig = {
@@ -15,7 +15,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
 
-    // Configuración oficial y definitiva de tu proyecto gamestore-75936
     provideFirebaseApp(() => initializeApp({
       apiKey: "AIzaSyDfFRXH0bmUx_kAQCoCNKmKSrGfpr36hbQ",
       authDomain: "gamestore-75936.firebaseapp.com",
@@ -29,8 +28,6 @@ export const appConfig: ApplicationConfig = {
     // Activamos Autenticación
     provideAuth(() => getAuth()),
     
-    // 🔥 EL PLAN C: Inicializamos Firestore forzando el "Long Polling".
-    // Esto obliga a Angular a usar peticiones web normales y evita que tu computadora bloquee la base de datos.
     provideFirestore(() => {
       const app = getApp();
       return initializeFirestore(app, {

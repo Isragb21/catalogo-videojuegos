@@ -1,0 +1,78 @@
+<div class="carrito-container">
+  <div class="carrito-header">
+    <h1 class="titulo">🛒 Mi Carrito</h1>
+    <button *ngIf="carrito.length > 0" (click)="vaciarCarrito()" class="btn-vaciar">
+      Vaciar Carrito
+    </button>
+  </div>
+  
+  <!-- Carrito vacío -->
+  <div *ngIf="carrito.length === 0" class="carrito-vacio">
+    <div class="vacio-icono">🛍️</div>
+    <p>Tu carrito está vacío</p>
+    <a routerLink="/catalogo" class="btn-ver-catalogo">Explorar Catálogo</a>
+  </div>
+  
+  <!-- Carrito con productos -->
+  <div *ngIf="carrito.length > 0">
+    <div class="carrito-items">
+      <!-- Encabezados -->
+      <div class="carrito-grid-header">
+        <span>Producto</span>
+        <span>Cantidad</span>
+        <span>Subtotal</span>
+        <span></span>
+      </div>
+      
+      <!-- Lista de productos -->
+      <div *ngFor="let item of carrito" class="carrito-item">
+        <div class="item-info">
+          <img [src]="item.imagen" [alt]="item.titulo" class="item-imagen">
+          <div class="item-detalle">
+            <h3>{{item.titulo}}</h3>
+            <p class="item-plataforma">{{item.plataforma}}</p>
+            <p class="item-precio-unitario">${{item.precio}} c/u</p>
+          </div>
+        </div>
+        
+        <div class="item-cantidad">
+          <button (click)="actualizarCantidad(item.id, item.cantidad - 1)" class="btn-cantidad">-</button>
+          <span class="cantidad-numero">{{item.cantidad}}</span>
+          <button (click)="actualizarCantidad(item.id, item.cantidad + 1)" class="btn-cantidad">+</button>
+        </div>
+        
+        <div class="item-subtotal">
+          ${{item.precio * item.cantidad}}
+        </div>
+        
+        <button (click)="eliminarItem(item.id)" class="btn-eliminar" title="Eliminar">
+          🗑️
+        </button>
+      </div>
+    </div>
+    
+    <!-- Resumen y pago -->
+    <div class="carrito-resumen">
+      <div class="total">
+        <span class="total-label">TOTAL:</span>
+        <span class="total-monto">${{total}}</span>
+      </div>
+      
+      <div class="acciones-pago">
+        <button (click)="procesarPago()" class="btn-pagar" [disabled]="procesando">
+          <span *ngIf="!procesando">💰 Pagar Ahora</span>
+          <span *ngIf="procesando">⏳ Procesando pago...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal de éxito - AHORA SIEMPRE VISIBLE CUANDO mostrarModal ES TRUE -->
+  <div class="modal-overlay" *ngIf="mostrarModal">
+    <div class="modal-contenido">
+      <div class="modal-icono">✅</div>
+      <h3>{{mensajeModal}}</h3>
+      <button (click)="cerrarModal()" class="btn-cerrar-modal">Continuar Comprando</button>
+    </div>
+  </div>
+</div>

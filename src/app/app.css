@@ -1,4 +1,3 @@
-/* --- ESTILOS DE LA NAVBAR MAMALONA (app.css) --- */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@400;600&display=swap');
 
 .navbar-cyber {
@@ -118,12 +117,40 @@
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.1);
   transition: 0.3s;
+  position: relative;
 }
 
 .btn-icon:hover { 
   background: rgba(0, 237, 100, 0.15); 
   border-color: #00ed64;
   transform: translateY(-2px);
+}
+
+/* ========================================== */
+/* ESTILOS DEL CARRITO (agregados) */
+/* ========================================== */
+
+/* Icono del carrito con contador */
+.carrito-icon {
+  position: relative;
+}
+
+.carrito-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff4c4c;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 5px rgba(255, 76, 76, 0.5);
+  font-family: 'Poppins', sans-serif;
 }
 
 .btn-logout-neon {

@@ -21,8 +21,13 @@
             <span class="user-email">{{ user.email }}</span>
           </div>
           <div class="nav-actions">
+            <!-- Icono del carrito con contador -->
+            <a routerLink="/carrito" class="btn-icon carrito-icon">
+              🛒
+              <span *ngIf="cantidadCarrito > 0" class="carrito-count">{{ cantidadCarrito }}</span>
+            </a>
             <a routerLink="/perfil" class="btn-icon">👤</a>
-            <a routerLink="/admin" class="btn-icon admin-glow">⚙️</a>
+            <a *ngIf="esAdmin" routerLink="/admin" class="btn-icon admin-glow">⚙️</a>
             <button (click)="cerrarSesion()" class="btn-logout-neon">SALIR</button>
           </div>
         </div>

@@ -57,6 +57,20 @@ export class AuthService {
     }
   }
 
+  // ✅ NUEVO MÉTODO: Verifica si el usuario actual es administrador
+  async isAdmin(): Promise<boolean> {
+    const user = this.auth.currentUser;
+    if (!user) return false;
+    
+    try {
+      const perfil = await this.obtenerPerfil(user.uid);
+      return perfil?.['rol'] === 'admin';
+    } catch (error) {
+      console.error("Error al verificar admin:", error);
+      return false;
+    }
+  }
+
   actualizarPerfil(uid: string, datos: any) {
     const userDoc = doc(this.firestore, `usuarios/${uid}`);
     return setDoc(userDoc, datos, { merge: true });

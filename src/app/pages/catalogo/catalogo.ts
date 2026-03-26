@@ -1,8 +1,12 @@
-import { Component, OnInit, inject, NgZone } from '@angular/core';
+import { Component, OnInit, inject, NgZone, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, collection, onSnapshot } from 'firebase/firestore';
+import { CarritoService, ProductoCarrito } from '../../services/carrito.service';
+import { AuthService } from '../../services/auth';
+import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDfFRXH0bmUx_kAQCoCNKmKSrGfpr36hbQ",
@@ -21,19 +25,21 @@ const firebaseConfig = {
   templateUrl: './catalogo.html',
   styleUrl: './catalogo.css'
 })
-export class Catalogo implements OnInit {
+export class Catalogo implements OnInit, OnDestroy {
   // Datos de Firebase
   juegos: any[] = []; 
   juegosFiltrados: any[] = []; 
   
-  // Variables de Carrito y Buscador
+  // Variables de Buscador
   busqueda: string = '';
-  carrito: any[] = [];
-  mostrarCarrito: boolean = false;
-  totalCarrito: number = 0;
-
+  
+  // Servicios inyectados
+  private carritoService = inject(CarritoService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
   private db: any;
   private ngZone = inject(NgZone);
+  private unsubscribeJuegos: any;
 
   constructor() {
     const nombreApp = 'CatalogoApp';
@@ -47,16 +53,22 @@ export class Catalogo implements OnInit {
     this.cargarDatos();
   }
 
+  ngOnDestroy() {
+    if (this.unsubscribeJuegos) {
+      this.unsubscribeJuegos();
+    }
+  }
+
   // --- CONEXIÓN FIREBASE ---
   cargarDatos() {
     const juegosRef = collection(this.db, 'videojuegos');
-    onSnapshot(juegosRef, (snapshot) => {
+    this.unsubscribeJuegos = onSnapshot(juegosRef, (snapshot) => {
       this.ngZone.run(() => {
         this.juegos = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        this.filtrarJuegos(); // Actualiza la lista al recibir datos
+        this.filtrarJuegos();
       });
     });
   }
@@ -75,28 +87,35 @@ export class Catalogo implements OnInit {
   }
 
   // --- LÓGICA CARRITO ---
-  toggleCarrito() {
-    this.mostrarCarrito = !this.mostrarCarrito;
-  }
+  async agregarAlCarrito(juego: any) {
+    // Verificar si el usuario está logueado usando el observable
+    const user = await firstValueFrom(this.auth.usuario$);
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
 
-  comprar(juego: any) {
-    this.carrito.push(juego);
-    this.calcularTotal();
-  }
-
-  eliminarDelCarrito(index: number) {
-    this.carrito.splice(index, 1);
-    this.calcularTotal();
-  }
-
-  calcularTotal() {
-    this.totalCarrito = this.carrito.reduce((acc, item) => acc + Number(item.precio), 0);
-  }
-
-  pagar() {
-    alert(`¡Gracias por tu compra! Total pagado: $${this.totalCarrito.toFixed(2)}`);
-    this.carrito = [];
-    this.totalCarrito = 0;
-    this.mostrarCarrito = false;
+    const producto: ProductoCarrito = {
+      id: juego.id,
+      titulo: juego.titulo,
+      plataforma: juego.plataforma,
+      precio: juego.precio,
+      imagen: juego.imagen || 'https://via.placeholder.com/150',
+      cantidad: 1
+    };
+    
+    this.carritoService.agregarAlCarrito(producto);
+    
+    // Feedback visual con animación en el botón
+    const btn = document.getElementById(`btn-${juego.id}`);
+    if (btn) {
+      const textoOriginal = btn.textContent;
+      btn.textContent = '✓ AGREGADO';
+      (btn as HTMLElement).style.background = '#00c853';
+      setTimeout(() => {
+        btn.textContent = '🛒 AGREGAR';
+        (btn as HTMLElement).style.background = '#00ed64';
+      }, 1500);
+    }
   }
 }
