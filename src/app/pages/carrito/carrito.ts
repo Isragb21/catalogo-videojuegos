@@ -31,8 +31,9 @@ export class CarritoComponent implements OnInit {
   
   // Variables para huella digital
   mostrarModalBiometrico: boolean = false;
+  mostrarModalRegistro: boolean = false;
   biometricoDisponible: boolean = false;
-  biometricoRegistrado: boolean = false;
+  tieneHuellaRegistrada: boolean = false;
   verificandoBiometrico: boolean = false;
 
   ngOnInit() {
@@ -48,7 +49,7 @@ export class CarritoComponent implements OnInit {
 
   async verificarBiometrico() {
     this.biometricoDisponible = await this.fingerprintService.isBiometricAvailable();
-    this.biometricoRegistrado = this.fingerprintService.hasBiometricRegistered();
+    this.tieneHuellaRegistrada = this.fingerprintService.hasFingerprintRegistered();
   }
 
   actualizarCantidad(id: string, cantidad: number) {
@@ -72,15 +73,57 @@ export class CarritoComponent implements OnInit {
       return;
     }
 
-    // Si hay biometría disponible y registrada, solicitar verificación
-    if (this.biometricoDisponible && this.biometricoRegistrado) {
-      this.mostrarModalBiometrico = true;
+    // Verificar si la biometría está disponible
+    if (!this.biometricoDisponible) {
+      // Si no hay biometría disponible, pago normal
+      await this.ejecutarPago();
+      return;
+    }
+
+    // Si hay biometría pero no tiene huella registrada, mostrar modal de registro
+    if (!this.tieneHuellaRegistrada) {
+      this.mostrarModalRegistro = true;
       this.cdr.detectChanges();
       return;
     }
 
-    // Si no hay biometría, continuar con pago normal
-    await this.ejecutarPago();
+    // Si ya tiene huella registrada, solicitar verificación
+    this.mostrarModalBiometrico = true;
+    this.cdr.detectChanges();
+  }
+
+  async registrarHuella() {
+    const user = await firstValueFrom(this.auth.usuario$);
+    if (!user) return;
+    
+    const resultado = await this.fingerprintService.registerFingerprint(user.uid, user.email || 'usuario');
+    
+    if (resultado.success) {
+      this.tieneHuellaRegistrada = true;
+      this.mensajeModal = resultado.message;
+      this.modalExito = true;
+      this.mostrarModal = true;
+      this.mostrarModalRegistro = false;
+      this.cdr.detectChanges();
+      
+      // Después de registrar, pedir verificación para el pago actual
+      setTimeout(() => {
+        this.mostrarModalBiometrico = true;
+        this.cdr.detectChanges();
+      }, 1500);
+    } else {
+      this.mensajeModal = resultado.message;
+      this.modalExito = false;
+      this.mostrarModal = true;
+      this.mostrarModalRegistro = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  cancelarRegistro() {
+    this.mostrarModalRegistro = false;
+    // Si cancela el registro, proceder con pago normal
+    this.ejecutarPago();
   }
 
   async confirmarConBiometrico() {
@@ -101,26 +144,6 @@ export class CarritoComponent implements OnInit {
       this.mostrarModalBiometrico = false;
       this.cdr.detectChanges();
     }
-  }
-
-  async registrarBiometrico() {
-    const user = await firstValueFrom(this.auth.usuario$);
-    if (!user) return;
-    
-    const registrado = await this.fingerprintService.registerDevice(user.uid, user.email || 'usuario');
-    
-    if (registrado) {
-      this.biometricoRegistrado = true;
-      this.mensajeModal = '✅ ¡Huella digital registrada con éxito! Ahora puedes pagar con biometría.';
-      this.modalExito = true;
-      this.mostrarModal = true;
-      this.mostrarModalBiometrico = false;
-    } else {
-      this.mensajeModal = '❌ No se pudo registrar la huella digital.';
-      this.modalExito = false;
-      this.mostrarModal = true;
-    }
-    this.cdr.detectChanges();
   }
 
   cancelarBiometrico() {
