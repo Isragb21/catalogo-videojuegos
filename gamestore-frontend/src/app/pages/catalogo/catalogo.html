@@ -12,12 +12,12 @@
   <div class="grid-container games-grid">
     @for (juego of juegosFiltrados; track juego.id) {
       <div class="glass-card game-card">
-        <img [src]="juego.imagen" [alt]="juego.titulo" class="card-image" />
+        <img [src]="juego.image_url" [alt]="juego.title" class="card-image" />
         <div class="card-content">
-          <h2 class="card-title">{{ juego.titulo }}</h2>
+          <h2 class="card-title">{{ juego.title }}</h2>
           <div class="card-metadata">
-            <span class="platform-badge">{{ juego.plataforma }}</span>
-            <span class="price-tag neon-text-green">${{ juego.precio }}</span>
+            <span class="platform-badge">{{ juego.platform }}</span>
+            <span class="price-tag neon-text-green">${{ juego.price }}</span>
           </div>
           <div class="card-actions">
             <button class="btn btn-outline-green btn-view-details">Ver detalles</button>

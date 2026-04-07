@@ -18,19 +18,19 @@
         <form (ngSubmit)="agregarJuego()">
           <div class="form-group glass-input-group">
             <label>Título del Juego:</label>
-            <input type="text" [(ngModel)]="nuevoTitulo" name="titulo" placeholder="Ej. Need for Speed" required />
+            <input type="text" [(ngModel)]="nuevoTitle" name="titulo" placeholder="Ej. Need for Speed" required />
           </div>
           <div class="form-group glass-input-group">
             <label>Plataforma:</label>
-            <input type="text" [(ngModel)]="nuevaPlataforma" name="plataforma" placeholder="Ej. PC" required />
+            <input type="text" [(ngModel)]="nuevaPlatform" name="plataforma" placeholder="Ej. PC" required />
           </div>
           <div class="form-group glass-input-group">
             <label>Precio ($):</label>
-            <input type="number" [(ngModel)]="nuevoPrecio" name="precio" placeholder="0" required />
+            <input type="number" [(ngModel)]="nuevoPrice" name="precio" placeholder="0" required />
           </div>
           <div class="form-group glass-input-group">
             <label>URL de Imagen:</label>
-            <input type="text" [(ngModel)]="nuevaImagen" name="imagen" placeholder="https://..." required />
+            <input type="text" [(ngModel)]="nuevaImageUrl" name="imagen" placeholder="https://..." required />
           </div>
           <button type="submit" class="btn btn-full-width btn-save-game">Guardar en Base de Datos</button>
         </form>
@@ -66,7 +66,7 @@
         </form>
       </div>
 
-      @if (usuarioEditandoUid) {
+      @if (usuarioEditandoId) {
       <div class="glass-card form-card edit-user-form">
         <h2>Editar Usuario</h2>
         <form (ngSubmit)="actualizarUsuario()">
@@ -109,10 +109,10 @@
             <tbody>
               @for (juego of juegos; track juego.id) {
                 <tr>
-                  <td><img [src]="juego.imagen" alt="{{ juego.titulo }}" class="table-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" /></td>
-                  <td>{{ juego.titulo }}</td>
-                  <td>{{ juego.plataforma }}</td>
-                  <td class="table-price neon-text-green">${{ juego.precio }}</td>
+                  <td><img [src]="juego.image_url" alt="{{ juego.title }}" class="table-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" /></td>
+                  <td>{{ juego.title }}</td>
+                  <td>{{ juego.platform }}</td>
+                  <td class="table-price neon-text-green">${{ juego.price }}</td>
                   <td class="table-actions">
                     <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarJuego(juego.id!)">Eliminar</button>
                   </td>
@@ -136,9 +136,9 @@
               </tr>
             </thead>
             <tbody>
-              @for (user of usuarios; track user.uid) {
+              @for (user of usuarios; track user.id) {
                 <tr>
-                  <td>{{ user.nombre }}</td>
+                  <td>{{ user.full_name }}</td>
                   <td>{{ user.email }}</td>
                   <td>
                     <span [style.color]="user.rol === 'admin' ? '#ffc107' : '#00ed64'" style="font-weight: bold; text-transform: uppercase;">
@@ -147,13 +147,13 @@
                   </td>
                   <td class="table-actions" style="display: flex; gap: 8px;">
                     @if (user.rol === 'cliente') {
-                      <button type="button" class="btn" style="background: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.uid, 'admin')">Hacer Admin</button>
+                      <button type="button" class="btn" style="background: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.id, 'admin')">Hacer Admin</button>
                     }
                     <button type="button" class="btn" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="iniciarEdicionUsuario(user)">Editar</button>
                     @if (user.rol === 'admin') {
-                      <button type="button" class="btn" style="background: #ffc107; color: black; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.uid, 'cliente')">Quitar Admin</button>
+                      <button type="button" class="btn" style="background: #ffc107; color: black; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.id, 'cliente')">Quitar Admin</button>
                     }
-                    <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarUsuario(user.uid)">Eliminar</button>
+                    <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarUsuario(user.id)">Eliminar</button>
                   </td>
                 </tr>
               }
@@ -186,10 +186,10 @@
           <tbody>
             @for (juego of juegos; track juego.id) {
               <tr>
-                <td><img [src]="juego.imagen" alt="{{ juego.titulo }}" class="table-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" /></td>
-                <td>{{ juego.titulo }}</td>
-                <td>{{ juego.plataforma }}</td>
-                <td class="table-price neon-text-green">${{ juego.precio }}</td>
+                <td><img [src]="juego.image_url" alt="{{ juego.title }}" class="table-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" /></td>
+                <td>{{ juego.title }}</td>
+                <td>{{ juego.platform }}</td>
+                <td class="table-price neon-text-green">${{ juego.price }}</td>
               </tr>
             }
           </tbody>
