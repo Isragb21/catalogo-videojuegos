@@ -1,88 +1,126 @@
 import { inject, Injectable } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, authState } from '@angular/fire/auth';
-import { Firestore, collection, setDoc, doc, collectionData, deleteDoc, getDoc } from '@angular/fire/firestore';
-import { Router } from '@angular/router'; // Importamos Router
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  
-  private auth = inject(Auth);
-  private firestore = inject(Firestore);
-  private router = inject(Router); // Inyectamos Router
+  private http = inject(HttpClient);
+  private router = inject(Router);
+  private apiUrl = 'http://localhost:3000/api';
 
-  usuario$ = authState(this.auth);
+  private usuarioSubject = new BehaviorSubject<any>(null);
+  usuario$ = this.usuarioSubject.asObservable();
+
+  constructor() {
+    const storedUser = localStorage.getItem('usuario_sesion');
+    if (storedUser) {
+      this.usuarioSubject.next(JSON.parse(storedUser));
+    }
+  }
 
   async registro(email: string, pass: string, nombre: string, telefono: string) {
-    const credenciales = await createUserWithEmailAndPassword(this.auth, email, pass);
-    const uid = credenciales.user.uid;
-
-    const usuarioRef = doc(this.firestore, `usuarios/${uid}`);
-    return setDoc(usuarioRef, {
-      uid: uid,
-      email: email,
-      nombre: nombre,
-      telefono: telefono,
-      rol: 'usuario',
-      fechaRegistro: new Date().toISOString()
-    });
+    await firstValueFrom(
+      this.http.post<any>(`${this.apiUrl}/users`, {
+        email,
+        password: pass,
+        full_name: nombre,
+        phone_number: telefono,
+        rol: 'cliente'
+      })
+    );
+    
+    // Auto login después del registro
+    return this.login(email, pass);
   }
 
-  login(email: string, pass: string) {
-    return signInWithEmailAndPassword(this.auth, email, pass);
+  async login(email: string, pass: string) {
+    const res = await firstValueFrom(
+      this.http.post<any>(`${this.apiUrl}/login`, { email, password: pass })
+    );
+    
+    const userData = {
+      uid: res.user.id,
+      email: res.user.email,
+      ...res.profile
+    };
+    
+    localStorage.setItem('usuario_sesion', JSON.stringify(userData));
+    this.usuarioSubject.next(userData);
+    return userData;
   }
 
-  // ✅ CORRECCIÓN: Ahora limpia el 2FA y redirige
+  async loginWithFingerprint(userId: string) {
+    const perfil = await this.obtenerPerfil(userId);
+    if (!perfil) throw new Error("Perfil no encontrado");
+
+    const userData = {
+      uid: perfil.id,
+      email: perfil.email,
+      ...perfil
+    };
+    
+    localStorage.setItem('usuario_sesion', JSON.stringify(userData));
+    this.usuarioSubject.next(userData);
+    return userData;
+  }
+
   async logout() {
     try {
-      localStorage.removeItem('2fa_aprobado'); // Limpiamos el acceso 2FA
-      await signOut(this.auth);               // Cerramos sesión en Firebase
-      this.router.navigate(['/login']);       // Mandamos al login
+      await firstValueFrom(this.http.post(`${this.apiUrl}/logout`, {}));
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }
+    
+    localStorage.removeItem('2fa_aprobado');
+    localStorage.removeItem('usuario_sesion');
+    this.usuarioSubject.next(null);
+    this.router.navigate(['/login']);
   }
 
   async obtenerPerfil(uid: string) {
     try {
-      const userDoc = doc(this.firestore, `usuarios/${uid}`);
-      const docSnap = await getDoc(userDoc);
-      
-      if (docSnap.exists()) {
-        return docSnap.data();
-      }
-      return null;
+      const perfil = await firstValueFrom(
+        this.http.get<any>(`${this.apiUrl}/users/${uid}`)
+      );
+      return perfil;
     } catch (error) {
       console.error("Error al obtener el perfil:", error);
       return null;
     }
   }
 
-  // ✅ NUEVO MÉTODO: Verifica si el usuario actual es administrador
   async isAdmin(): Promise<boolean> {
-    const user = this.auth.currentUser;
+    const user = this.usuarioSubject.value;
     if (!user) return false;
     
     try {
       const perfil = await this.obtenerPerfil(user.uid);
-      return perfil?.['rol'] === 'admin';
+      return perfil?.rol === 'admin';
     } catch (error) {
       console.error("Error al verificar admin:", error);
       return false;
     }
   }
 
-  actualizarPerfil(uid: string, datos: any) {
-    const userDoc = doc(this.firestore, `usuarios/${uid}`);
-    return setDoc(userDoc, datos, { merge: true });
+  async actualizarPerfil(uid: string, datos: any) {
+    const updatedProfile = await firstValueFrom(
+      this.http.put<any>(`${this.apiUrl}/users/${uid}`, datos)
+    );
+    
+    const currentUser = this.usuarioSubject.value;
+    const newUserData = { ...currentUser, ...updatedProfile };
+    localStorage.setItem('usuario_sesion', JSON.stringify(newUserData));
+    this.usuarioSubject.next(newUserData);
+    
+    return updatedProfile;
   }
 
   obtenerTodosLosUsuarios() {
-    const usuariosRef = collection(this.firestore, 'usuarios');
-    return collectionData(usuariosRef, { idField: 'id' });
+    return this.http.get<any[]>(`${this.apiUrl}/users`);
   }
 
   eliminarUsuarioDB(uid: string) {
-    const usuarioDoc = doc(this.firestore, `usuarios/${uid}`);
-    return deleteDoc(usuarioDoc);
+    return this.http.delete(`${this.apiUrl}/users/${uid}`);
   }
 }

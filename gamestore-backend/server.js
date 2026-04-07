@@ -86,6 +86,44 @@ app.delete('/api/videogames/:id', async (req, res) => {
 // 1.5 Gestión de Usuarios (Admin)
 // ==========================================
 
+// Login de usuario
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+      
+      res.json({ user: data.user, profile: profile, session: data.session });
+  } catch (error) {
+      res.status(401).json({ error: error.message });
+  }
+});
+
+// Logout de usuario
+app.post('/api/logout', async (req, res) => {
+  try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      res.json({ message: 'Sesión cerrada correctamente' });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Obtener un perfil
+app.get('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
+      if (error) throw error;
+      res.json(data);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
 // Obtener todos los perfiles
 app.get('/api/users', async (req, res) => {
   try {

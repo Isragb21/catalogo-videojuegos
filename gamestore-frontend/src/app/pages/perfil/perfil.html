@@ -27,8 +27,8 @@
           <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Nombre de Guerrero:</label>
           <input 
             type="text" 
-            [(ngModel)]="usuario.nombre" 
-            name="nombre" 
+            [(ngModel)]="usuario.full_name" 
+            name="full_name" 
             placeholder="Ej. MasterChief" 
             style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px;"
             required 
@@ -39,8 +39,8 @@
           <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Número de Contacto:</label>
           <input 
             type="tel" 
-            [(ngModel)]="usuario.telefono" 
-            name="telefono" 
+            [(ngModel)]="usuario.phone_number" 
+            name="phone_number" 
             placeholder="555-000-0000" 
             style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px;"
           />
@@ -48,10 +48,19 @@
 
         <button 
           type="submit" 
-          style="width: 100%; padding: 15px; background: #00ed64; color: #000; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s;"
+          style="width: 100%; padding: 15px; background: #00ed64; color: #000; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; margin-bottom: 15px;"
           onmouseover="this.style.boxShadow='0 0 15px rgba(0, 237, 100, 0.6)'"
           onmouseout="this.style.boxShadow='none'">
           GUARDAR CAMBIOS
+        </button>
+
+        <button 
+          type="button" 
+          (click)="registrarHuella()"
+          style="width: 100%; padding: 15px; background: #333; color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; border: 1px solid #555; border-radius: 5px; cursor: pointer; transition: 0.3s;"
+          onmouseover="this.style.background='#444'"
+          onmouseout="this.style.background='#333'">
+          👆 REGISTRAR HUELLA PARA LOGIN
         </button>
 
       </form>

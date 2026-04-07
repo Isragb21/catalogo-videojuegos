@@ -2,6 +2,7 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth';
+import { FingerprintService } from '../../services/fingerprint.service';
 
 @Component({
   selector: 'app-perfil',
@@ -12,12 +13,13 @@ import { AuthService } from '../../services/auth';
 })
 export class Perfil implements OnInit {
   private authService = inject(AuthService);
+  private fingerprintService = inject(FingerprintService);
   private cdr = inject(ChangeDetectorRef);
   
   usuario: any = {
-    nombre: '',
+    full_name: '',
     email: '',
-    telefono: '',
+    phone_number: '',
     fotoUrl: ''
   };
   
@@ -26,10 +28,10 @@ export class Perfil implements OnInit {
   editando = false;
 
   ngOnInit() {
-    // Se suscribe al estado de autenticación de Firebase
+    // Se suscribe al estado de autenticación
     this.authService.usuario$.subscribe(async (user) => {
       if (user) {
-        this.uid = user.uid;
+        this.uid = user.uid || user.id;
         this.usuario.email = user.email;
         
         try {
@@ -53,9 +55,22 @@ export class Perfil implements OnInit {
     });
   }
 
+  async registrarHuella() {
+    try {
+      const result = await this.fingerprintService.registerFingerprint(this.uid, this.usuario.email);
+      alert(result.message);
+    } catch (error) {
+      console.error(error);
+      alert('Hubo un error al registrar la huella.');
+    }
+  }
+
   guardarCambios() {
-    // Envía la actualización a Firestore
-    this.authService.actualizarPerfil(this.uid, this.usuario).then(() => {
+    // Envía la actualización al backend
+    this.authService.actualizarPerfil(this.uid, {
+      full_name: this.usuario.full_name,
+      phone_number: this.usuario.phone_number
+    }).then(() => {
       this.editando = false;
       alert('¡Perfil de Guerrero actualizado! ⚔️');
     }).catch(error => {

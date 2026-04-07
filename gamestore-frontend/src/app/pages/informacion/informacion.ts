@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 export class Informacion {
   // Datos informativos para la página interna
-  descripcion = 'GameStore 2026 es una plataforma SPA desarrollada con Angular 21 y Firebase Firestore para la gestión de videojuegos digitales en tiempo real.';
+  descripcion = 'GameStore 2026 es una plataforma SPA desarrollada con Angular 21 y Express + Supabase para la gestión de videojuegos digitales en tiempo real.';
   
   publicos = [
     { perfil: 'Gamers', desc: 'Usuarios que buscan licencias originales con validación de precios oficial.' },

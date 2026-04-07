@@ -1,11 +1,16 @@
 // src/app/services/fingerprint.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FingerprintService {
-  
+  private http = inject(HttpClient);
+  private apiUrl = 'http://localhost:3000/api/biometrics';
+
   isWebAuthnSupported(): boolean {
     return typeof window !== 'undefined' && 
            window.PublicKeyCredential !== undefined &&
@@ -15,84 +20,48 @@ export class FingerprintService {
   async isBiometricAvailable(): Promise<boolean> {
     if (!this.isWebAuthnSupported()) return false;
     try {
-      const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-      return available;
+      return await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
     } catch (error) {
       return false;
     }
   }
 
-  async registerFingerprint(userId: string, userName: string): Promise<{ success: boolean; message: string; credentialId?: string }> {
+  async registerFingerprint(userId: string, userName: string): Promise<{ success: boolean; message: string }> {
     if (!this.isWebAuthnSupported()) {
       return { success: false, message: 'Tu navegador no soporta autenticación biométrica' };
     }
 
-    const available = await this.isBiometricAvailable();
-    if (!available) {
-      return { success: false, message: 'Configura tu huella en Windows: Configuración > Cuentas > Opciones de inicio de sesión' };
-    }
-
     try {
-      const challenge = new Uint8Array(32);
-      crypto.getRandomValues(challenge);
+      // 1. Obtener opciones de registro del backend
+      const options = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/generate-registration-options`, {
+        email: userName,
+        user_id: userId
+      }));
 
-      const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
-        challenge: challenge,
-        rp: { name: 'GameStore', id: window.location.hostname },
-        user: { 
-          id: new TextEncoder().encode(userId), 
-          name: userName, 
-          displayName: userName 
-        },
-        pubKeyCredParams: [
-          { alg: -7, type: 'public-key' },
-          { alg: -257, type: 'public-key' }
-        ],
-        authenticatorSelection: {
-          authenticatorAttachment: 'platform',
-          userVerification: 'required',
-          requireResidentKey: false
-        },
-        timeout: 60000,
-        attestation: 'none'
-      };
+      // 2. Ejecutar WebAuthn en el navegador
+      const registrationResponse = await startRegistration({ optionsJSON: options });
 
-      const credential = await navigator.credentials.create({
-        publicKey: publicKeyCredentialCreationOptions
-      }) as any;
+      // 3. Enviar respuesta al backend para verificación
+      const verificationResp = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/verify-registration`, {
+        user_id: userId,
+        registrationResponse
+      }));
 
-      if (credential && credential.id) {
-        // Guardar la credencial completa
-        const credentialData = {
-          id: credential.id,
-          rawId: this.arrayBufferToBase64(credential.rawId),
-          userId: userId,
-          registeredAt: new Date().toISOString()
-        };
-        localStorage.setItem('fingerprint_registered', JSON.stringify(credentialData));
-        console.log('Huella registrada con ID:', credential.id);
-        return { 
-          success: true, 
-          message: '✅ ¡Huella registrada con éxito!',
-          credentialId: credential.id
-        };
+      if (verificationResp.verified) {
+        localStorage.setItem('fingerprint_user_id', userId);
+        return { success: true, message: '✅ ¡Huella registrada con éxito!' };
       }
-      return { success: false, message: 'No se pudo registrar la huella' };
+      return { success: false, message: 'No se pudo verificar el registro' };
     } catch (error: any) {
       console.error('Error registrando huella:', error);
-      if (error.name === 'NotAllowedError') {
-        return { success: false, message: 'Registro cancelado por el usuario' };
-      } else if (error.name === 'InvalidStateError') {
-        return { success: false, message: 'Ya existe una credencial. Reinicia el navegador y prueba de nuevo.' };
-      }
       return { success: false, message: 'Error al registrar: ' + (error.message || 'intenta nuevamente') };
     }
   }
 
-  async verifyFingerprint(): Promise<{ success: boolean; message: string }> {
-    const registered = this.getFingerprintRegistration();
-    if (!registered) {
-      return { success: false, message: 'Primero registra tu huella' };
+  async verifyFingerprint(): Promise<{ success: boolean; message: string; userId?: string }> {
+    const userId = localStorage.getItem('fingerprint_user_id');
+    if (!userId) {
+      return { success: false, message: 'Primero registra tu huella en esta PC' };
     }
 
     if (!this.isWebAuthnSupported()) {
@@ -100,84 +69,36 @@ export class FingerprintService {
     }
 
     try {
-      // Convertir el ID guardado a ArrayBuffer
-      let credentialId: ArrayBuffer;
-      if (registered.rawId) {
-        credentialId = this.base64ToArrayBuffer(registered.rawId);
+      // 1. Obtener opciones de autenticación
+      const options = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/generate-authentication-options`, {
+        user_id: userId
+      }));
+
+      // 2. Ejecutar WebAuthn
+      const authenticationResponse = await startAuthentication({ optionsJSON: options });
+
+      // 3. Enviar al backend para validar
+      const verificationResp = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/verify-authentication`, {
+        user_id: userId,
+        authenticationResponse
+      }));
+
+      if (verificationResp.verified) {
+        return { success: true, message: '✅ Verificación exitosa', userId };
       } else {
-        credentialId = this.base64ToArrayBuffer(registered.id);
-      }
-
-      const challenge = new Uint8Array(32);
-      crypto.getRandomValues(challenge);
-
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
-        challenge: challenge,
-        timeout: 60000,
-        userVerification: 'required',
-        rpId: window.location.hostname,
-        allowCredentials: [{
-          id: credentialId,
-          type: 'public-key'
-        }]
-      };
-
-      const credential = await navigator.credentials.get({
-        publicKey: publicKeyCredentialRequestOptions
-      });
-
-      if (credential) {
-        console.log('Verificación exitosa');
-        return { success: true, message: '✅ Verificación exitosa' };
-      } else {
-        return { success: false, message: 'Verificación cancelada' };
+        return { success: false, message: 'Verificación fallida' };
       }
     } catch (error: any) {
       console.error('Error en verificación:', error);
-      if (error.name === 'NotAllowedError') {
-        return { success: false, message: 'Verificación cancelada' };
-      } else if (error.name === 'InvalidStateError') {
-        return { success: false, message: 'Credencial no válida. Vuelve a registrar tu huella.' };
-      }
-      return { success: false, message: 'Coloca tu dedo en el sensor' };
+      return { success: false, message: 'Fallo al autenticar huella' };
     }
   }
 
   hasFingerprintRegistered(): boolean {
-    return localStorage.getItem('fingerprint_registered') !== null;
-  }
-
-  getFingerprintRegistration(): any {
-    const data = localStorage.getItem('fingerprint_registered');
-    if (data) {
-      try {
-        return JSON.parse(data);
-      } catch (e) {
-        return null;
-      }
-    }
-    return null;
+    return localStorage.getItem('fingerprint_user_id') !== null;
   }
 
   clearFingerprintRegistration() {
-    localStorage.removeItem('fingerprint_registered');
-  }
-
-  private arrayBufferToBase64(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  }
-
-  private base64ToArrayBuffer(base64: string): ArrayBuffer {
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
+    localStorage.removeItem('fingerprint_user_id');
   }
 }

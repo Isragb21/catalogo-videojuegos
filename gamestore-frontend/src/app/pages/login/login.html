@@ -47,6 +47,12 @@
             {{ modoRegistro ? 'Registrarme' : 'Ingresar' }}
           </button>
           
+          @if (!modoRegistro && fingerprintService.hasFingerprintRegistered()) {
+            <button type="button" class="btn-cta" style="background: #333; margin-top: 10px;" (click)="loginConHuella()">
+              👆 Ingresar con Huella
+            </button>
+          }
+
           <button type="button" class="btn-register-redirect" (click)="toggleModo()">
             {{ modoRegistro ? 'Volver al Login' : 'Crear Cuenta Nueva' }}
           </button>

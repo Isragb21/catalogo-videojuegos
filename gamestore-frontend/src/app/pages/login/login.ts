@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth'; 
 import { QRCodeComponent } from 'angularx-qrcode';
 import * as OTPAuth from 'otpauth';
+import { FingerprintService } from '../../services/fingerprint.service';
 
 @Component({
   selector: 'app-login',
@@ -32,9 +33,31 @@ export class Login implements OnInit {
 
   private router = inject(Router);
   private authService = inject(AuthService);
+  public fingerprintService = inject(FingerprintService);
 
   ngOnInit() {
     localStorage.removeItem('2fa_aprobado');
+  }
+
+  async loginConHuella() {
+    this.mensajeError = '';
+    const result = await this.fingerprintService.verifyFingerprint();
+    if (result.success && result.userId) {
+      try {
+        await this.authService.loginWithFingerprint(result.userId);
+        
+        // Asignamos el correo del perfil obtenido (que ahora está en sesión) a la variable temporal
+        const userSession = JSON.parse(localStorage.getItem('usuario_sesion') || '{}');
+        this.correoActual = userSession.email;
+
+        // Pasamos al flujo 2FA igual que el login normal
+        this.preparar2FA(this.correoActual);
+      } catch (err) {
+        this.mensajeError = 'Error al cargar perfil desde la huella.';
+      }
+    } else {
+      this.mensajeError = result.message;
+    }
   }
 
   toggleModo() {
@@ -86,9 +109,10 @@ export class Login implements OnInit {
       }
 
     } catch (error: any) {
-      if (error.code === 'auth/invalid-credential') {
+      const errorMsg = error.error?.error || error.message || '';
+      if (errorMsg.includes('Invalid login credentials') || errorMsg.includes('invalid-credential') || error.status === 401) {
         this.mensajeError = 'Correo o contrasena incorrectos.';
-      } else if (error.code === 'auth/email-already-in-use') {
+      } else if (errorMsg.includes('already registered') || errorMsg.includes('already-in-use') || error.status === 400) {
         this.mensajeError = 'Este correo ya esta registrado.';
       } else {
         this.mensajeError = 'Ocurrio un error inesperado.';
