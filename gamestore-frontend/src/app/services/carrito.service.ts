@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth';
+import { ApiConfigService } from './api-config.service';
 
 export interface ProductoCarrito {
   id: string;
@@ -21,8 +22,9 @@ export class CarritoService {
 
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private apiUrl = 'https://gamestore-api-5qa6.onrender.com/api/cart';
+  private apiConfig = inject(ApiConfigService);
   private currentUserId: string | null = null;
+  get apiUrl() { return `${this.apiConfig.baseUrl}/cart`; }
 
   constructor() {
     this.cargarCarritoLocal();

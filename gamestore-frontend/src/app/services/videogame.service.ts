@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiConfigService } from './api-config.service';
 
 export interface Videogame {
   id?: string;
@@ -17,7 +18,8 @@ export interface Videogame {
 })
 export class VideogameService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/videogames';
+  private apiConfig = inject(ApiConfigService);
+  get apiUrl() { return `${this.apiConfig.baseUrl}/videogames`; }
 
   getVideogames(): Observable<Videogame[]> {
     return this.http.get<Videogame[]>(this.apiUrl);

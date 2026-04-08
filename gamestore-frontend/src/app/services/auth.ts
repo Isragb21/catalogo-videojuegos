@@ -2,12 +2,14 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { ApiConfigService } from './api-config.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private apiUrl = 'http://localhost:3000/api';
+  private apiConfig = inject(ApiConfigService);
+  get apiUrl() { return this.apiConfig.baseUrl; }
 
   private usuarioSubject = new BehaviorSubject<any>(null);
   usuario$ = this.usuarioSubject.asObservable();

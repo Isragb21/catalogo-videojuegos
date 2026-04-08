@@ -3,13 +3,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import { firstValueFrom } from 'rxjs';
+import { ApiConfigService } from './api-config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FingerprintService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://gamestore-api-5qa6.onrender.com/api/biometrics';
+  private apiConfig = inject(ApiConfigService);
+  get apiUrl() { return `${this.apiConfig.baseUrl}/biometrics`; }
 
   isWebAuthnSupported(): boolean {
     return typeof window !== 'undefined' && 

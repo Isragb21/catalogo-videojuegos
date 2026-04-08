@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 // Importamos tus servicios
 import { AuthService } from '../../services/auth'; 
 import { VideogameService, Videogame } from '../../services/videogame.service'; 
+import { ApiConfigService } from '../../services/api-config.service';
 
 @Component({
   selector: 'app-admin',
@@ -22,6 +23,7 @@ export class Admin implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private videogameService = inject(VideogameService);
   private http = inject(HttpClient); // Lo usamos temporalmente para los usuarios
+  private apiConfig = inject(ApiConfigService);
 
   // Variables de Videojuegos (Adaptadas a Supabase)
   nuevoTitle: string = '';
@@ -50,7 +52,7 @@ export class Admin implements OnInit, OnDestroy {
   cargandoRol: boolean = true;
   
   private authSubscription: any;
-  private apiUsersUrl = 'https://gamestore-api-5qa6.onrender.com/api/users'; // Nueva ruta en Render
+  get apiUsersUrl() { return `${this.apiConfig.baseUrl}/users`; }
 
   ngOnInit() {
     this.obtenerJuegos();
