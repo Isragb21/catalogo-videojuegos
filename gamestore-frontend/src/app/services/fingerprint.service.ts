@@ -9,7 +9,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class FingerprintService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/biometrics';
+  private apiUrl = 'https://gamestore-api-5qa6.onrender.com/api/biometrics';
 
   isWebAuthnSupported(): boolean {
     return typeof window !== 'undefined' && 

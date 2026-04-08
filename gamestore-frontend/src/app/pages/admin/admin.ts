@@ -50,7 +50,7 @@ export class Admin implements OnInit, OnDestroy {
   cargandoRol: boolean = true;
   
   private authSubscription: any;
-  private apiUsersUrl = 'http://localhost:3000/api/users'; // Nueva ruta para usuarios
+  private apiUsersUrl = 'https://gamestore-api-5qa6.onrender.com/api/users'; // Nueva ruta en Render
 
   ngOnInit() {
     this.obtenerJuegos();

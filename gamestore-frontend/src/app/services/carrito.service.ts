@@ -21,7 +21,7 @@ export class CarritoService {
 
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private apiUrl = 'http://localhost:3000/api/cart';
+  private apiUrl = 'https://gamestore-api-5qa6.onrender.com/api/cart';
   private currentUserId: string | null = null;
 
   constructor() {
