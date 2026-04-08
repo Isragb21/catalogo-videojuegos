@@ -17,8 +17,9 @@ const PORT = process.env.PORT || 3000;
 // ==========================================
 const allowedOrigins = [
   'http://localhost:8100', 
-  'http://localhost:4200', 
-  'https://tu-dominio-vercel.app'
+  'http://localhost:4200',
+  'https://catalogo-videojuegos-49zj2nvzc-israel-s-projects-a3827549.vercel.app', // URL de producción
+  /^https:\/\/catalogo-videojuegos.*\.vercel\.app$/ // Comodín para previews de Vercel
 ];
 
 app.use(cors({
@@ -42,10 +43,23 @@ const supabase = createClient(
 // VARIABLES WEBAUTHN (Actualizadas para puerto 8100)
 // ==========================================
 const rpName = 'GameStore';
-const rpID = 'localhost'; 
-// El origen esperado debe coincidir con la URL del navegador
-const expectedOrigins = ['http://localhost:8100', 'http://localhost:4200']; 
 const currentChallenges = {}; 
+
+// Helper para configurar WebAuthn dinámicamente para Vercel y Localhost
+function getWebAuthnConfig(req) {
+  const origin = req.headers.origin;
+  if (origin && origin.includes('vercel.app')) {
+      const originUrl = new URL(origin);
+      return {
+          rpID: originUrl.hostname,
+          expectedOrigins: [origin]
+      };
+  }
+  return {
+      rpID: 'localhost',
+      expectedOrigins: ['http://localhost:8100', 'http://localhost:4200']
+  };
+}
 
 // ==========================================
 // 1. Catálogo de Juegos (CRUD COMPLETO)
@@ -282,9 +296,10 @@ app.delete('/api/cart/:userId', async (req, res) => {
 
 app.post('/api/biometrics/generate-registration-options', async (req, res) => {
   const { email, user_id } = req.body;
+  const { rpID } = getWebAuthnConfig(req);
   try {
       const options = await generateRegistrationOptions({
-        rpName, rpID, userID: new Uint8Array(Buffer.from(user_id)), userName: email, attestationType: 'none',
+        rpName, rpID, userID: new Uint8Array(Buffer.from(user_id)), userName: email, attestationType: 'none', // rpID dinámico
         authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
       });
       currentChallenges[user_id] = options.challenge;
@@ -299,12 +314,14 @@ app.post('/api/biometrics/verify-registration', async (req, res) => {
   const expectedChallenge = currentChallenges[user_id];
   if (!expectedChallenge) return res.status(400).json({ error: 'Challenge expirado' });
 
+  const { rpID, expectedOrigins } = getWebAuthnConfig(req);
+
   try {
     const verification = await verifyRegistrationResponse({
       response: registrationResponse, 
       expectedChallenge, 
-      expectedOrigin: expectedOrigins, // Acepta el array de orígenes
-      expectedRPID: rpID,
+      expectedOrigin: expectedOrigins, // dinámico
+      expectedRPID: rpID, // dinámico
     });
 
     if (verification.verified) {
@@ -329,12 +346,13 @@ app.post('/api/biometrics/verify-registration', async (req, res) => {
 
 app.post('/api/biometrics/generate-authentication-options', async (req, res) => {
   const { user_id } = req.body;
+  const { rpID } = getWebAuthnConfig(req);
   try {
       const { data: credentials, error } = await supabase.from('webauthn_credentials').select('*').eq('user_id', user_id);
       if (error || !credentials.length) return res.status(404).json({ error: 'Sin credenciales biométricas.' });
 
       const options = await generateAuthenticationOptions({
-        rpID,
+        rpID, // dinámico
         allowCredentials: credentials.map(c => ({ id: new Uint8Array(Buffer.from(c.credential_id, 'base64')), type: 'public-key' })),
         userVerification: 'preferred',
       });
@@ -350,6 +368,8 @@ app.post('/api/biometrics/verify-authentication', async (req, res) => {
   const expectedChallenge = currentChallenges[user_id];
   if (!expectedChallenge) return res.status(400).json({ error: 'Challenge expirado' });
 
+  const { rpID, expectedOrigins } = getWebAuthnConfig(req);
+
   try {
       const { data: credentials } = await supabase.from('webauthn_credentials').select('*').eq('user_id', user_id);
       const credential = credentials.find(c => Buffer.from(c.credential_id, 'base64').toString('base64url') === authenticationResponse.id);
@@ -358,8 +378,8 @@ app.post('/api/biometrics/verify-authentication', async (req, res) => {
       const verification = await verifyAuthenticationResponse({
         response: authenticationResponse, 
         expectedChallenge, 
-        expectedOrigin: expectedOrigins, // Acepta el array de orígenes
-        expectedRPID: rpID,
+        expectedOrigin: expectedOrigins, // dinámico
+        expectedRPID: rpID, // dinámico
         authenticator: {
           credentialID: new Uint8Array(Buffer.from(credential.credential_id, 'base64')),
           credentialPublicKey: new Uint8Array(Buffer.from(credential.public_key, 'base64')),
