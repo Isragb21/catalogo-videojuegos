@@ -305,7 +305,8 @@ app.post('/api/biometrics/generate-registration-options', async (req, res) => {
       currentChallenges[user_id] = options.challenge;
       res.json(options);
   } catch (error) {
-      res.status(500).json({ error: 'Error al generar opciones de biometría' });
+      console.error("Error en generateRegistrationOptions:", error);
+      res.status(500).json({ error: 'Error al generar opciones: ' + error.message });
   }
 });
 
@@ -339,6 +340,7 @@ app.post('/api/biometrics/verify-registration', async (req, res) => {
       return res.json({ verified: true });
     }
   } catch (error) {
+    console.error("Error en verifyRegistrationResponse:", error);
     return res.status(400).json({ error: error.message });
   }
   return res.status(400).json({ verified: false });
@@ -353,13 +355,14 @@ app.post('/api/biometrics/generate-authentication-options', async (req, res) => 
 
       const options = await generateAuthenticationOptions({
         rpID, // dinámico
-        allowCredentials: credentials.map(c => ({ id: new Uint8Array(Buffer.from(c.credential_id, 'base64')), type: 'public-key' })),
+        allowCredentials: credentials.map(c => ({ id: Buffer.from(c.credential_id, 'base64').toString('base64url'), type: 'public-key' })),
         userVerification: 'preferred',
       });
       currentChallenges[user_id] = options.challenge;
       res.json(options);
   } catch (error) {
-      res.status(500).json({ error: 'Error al generar opciones' });
+      console.error("Error en generateAuthenticationOptions:", error);
+      res.status(500).json({ error: 'Error al generar opciones: ' + error.message });
   }
 });
 
@@ -393,6 +396,7 @@ app.post('/api/biometrics/verify-authentication', async (req, res) => {
         return res.json({ verified: true });
       }
   } catch (error) {
+    console.error("Error en verifyAuthenticationResponse:", error);
     return res.status(400).json({ error: error.message });
   }
   return res.status(400).json({ verified: false });
