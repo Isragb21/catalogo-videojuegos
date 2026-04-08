@@ -300,7 +300,11 @@ app.post('/api/biometrics/generate-registration-options', async (req, res) => {
   try {
       const options = await generateRegistrationOptions({
         rpName, rpID, userID: new Uint8Array(Buffer.from(user_id)), userName: email, attestationType: 'none', // rpID dinámico
-        authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
+        authenticatorSelection: { 
+          authenticatorAttachment: 'platform', 
+          residentKey: 'required', 
+          userVerification: 'preferred' 
+        },
       });
       currentChallenges[user_id] = options.challenge;
       res.json(options);

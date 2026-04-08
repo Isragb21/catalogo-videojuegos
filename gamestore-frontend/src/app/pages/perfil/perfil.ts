@@ -65,6 +65,14 @@ export class Perfil implements OnInit {
     }
   }
 
+  activarEdicion() {
+    this.editando = true;
+  }
+
+  cancelarEdicion() {
+    this.editando = false;
+  }
+
   guardarCambios() {
     // Envía la actualización al backend
     this.authService.actualizarPerfil(this.uid, {

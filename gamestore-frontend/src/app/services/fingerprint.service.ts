@@ -63,7 +63,7 @@ export class FingerprintService {
   async verifyFingerprint(): Promise<{ success: boolean; message: string; userId?: string }> {
     const userId = localStorage.getItem('fingerprint_user_id');
     if (!userId) {
-      return { success: false, message: 'Primero registra tu huella en esta PC' };
+      return { success: false, message: 'Primero debes registrarla accediendo a tu perfil' };
     }
 
     if (!this.isWebAuthnSupported()) {
