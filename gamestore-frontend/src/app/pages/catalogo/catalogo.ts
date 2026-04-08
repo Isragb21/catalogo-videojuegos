@@ -37,11 +37,11 @@ export class Catalogo implements OnInit {
   // --- CONEXIÓN EXPRESS / POSTGRESQL ---
   cargarDatos() {
     this.videogameService.getVideogames().subscribe({
-      next: (data) => {
+      next: (data: Videogame[]) => {
         this.juegos = data;
         this.filtrarJuegos(); // Inicializamos la lista visual
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('❌ Error al cargar el catálogo desde el backend:', error);
       }
     });
@@ -72,7 +72,7 @@ export class Catalogo implements OnInit {
 
     // Mapeamos los datos de Supabase a la estructura que espera tu CarritoService actual
     const producto: ProductoCarrito = {
-      id: juego.id,
+      id: juego.id || '',
       titulo: juego.title, // Adaptación: title (BD) -> titulo (Frontend)
       plataforma: juego.platform, // Adaptación: platform (BD) -> plataforma (Frontend)
       precio: juego.price, // Adaptación: price (BD) -> precio (Frontend)

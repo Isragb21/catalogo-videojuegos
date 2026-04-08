@@ -72,10 +72,14 @@ export class AuthService {
       console.error("Error al cerrar sesión:", error);
     }
     
+    this.clearLocalSession();
+    this.router.navigate(['/login']);
+  }
+
+  clearLocalSession() {
     localStorage.removeItem('2fa_aprobado');
     localStorage.removeItem('usuario_sesion');
     this.usuarioSubject.next(null);
-    this.router.navigate(['/login']);
   }
 
   async obtenerPerfil(uid: string) {
@@ -114,6 +118,18 @@ export class AuthService {
     this.usuarioSubject.next(newUserData);
     
     return updatedProfile;
+  }
+
+  async guardarSecreto2FA(uid: string, secret: string) {
+    return await firstValueFrom(
+      this.http.post<any>(`${this.apiUrl}/users/${uid}/2fa`, { secret })
+    );
+  }
+
+  async resetear2FA(uid: string) {
+    return await firstValueFrom(
+      this.http.post<any>(`${this.apiUrl}/users/${uid}/reset-2fa`, {})
+    );
   }
 
   obtenerTodosLosUsuarios() {

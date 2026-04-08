@@ -12,9 +12,17 @@ const {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuración de CORS más segura
+// ==========================================
+// CONFIGURACIÓN DE CORS (Actualizada para puerto 8100)
+// ==========================================
+const allowedOrigins = [
+  'http://localhost:8100', 
+  'http://localhost:4200', 
+  'https://tu-dominio-vercel.app'
+];
+
 app.use(cors({
-    origin: ['http://localhost:4200', 'https://tu-dominio-vercel.app'], 
+    origin: allowedOrigins, 
     credentials: true 
 }));
 app.use(express.json());
@@ -30,10 +38,13 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Variables temporales para WebAuthn
+// ==========================================
+// VARIABLES WEBAUTHN (Actualizadas para puerto 8100)
+// ==========================================
 const rpName = 'GameStore';
 const rpID = 'localhost'; 
-const origin = `http://${rpID}:4200`; 
+// El origen esperado debe coincidir con la URL del navegador
+const expectedOrigins = ['http://localhost:8100', 'http://localhost:4200']; 
 const currentChallenges = {}; 
 
 // ==========================================
@@ -86,7 +97,6 @@ app.delete('/api/videogames/:id', async (req, res) => {
 // 1.5 Gestión de Usuarios (Admin)
 // ==========================================
 
-// Login de usuario
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -101,7 +111,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Logout de usuario
 app.post('/api/logout', async (req, res) => {
   try {
       const { error } = await supabase.auth.signOut();
@@ -112,7 +121,6 @@ app.post('/api/logout', async (req, res) => {
   }
 });
 
-// Obtener un perfil
 app.get('/api/users/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -124,7 +132,6 @@ app.get('/api/users/:id', async (req, res) => {
   }
 });
 
-// Obtener todos los perfiles
 app.get('/api/users', async (req, res) => {
   try {
       const { data, error } = await supabase.from('profiles').select('*');
@@ -135,21 +142,19 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// Crear usuario (Crea en Auth y en Profiles)
 app.post('/api/users', async (req, res) => {
   const { email, password, full_name, rol, phone_number } = req.body;
   try {
-      // 1. Crear en Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: email,
         password: password,
-        email_confirm: true // Para que no pida confirmación por correo en desarrollo
+        email_confirm: true 
       });
 
       if (authError) throw authError;
 
-      // 2. Crear su perfil en public.profiles
-      const { data: profileData, error: profileError } = await supabase.from('profiles').insert([{
+      // Usamos upsert para evitar error 500 si Supabase ya creó el perfil automáticamente con un Trigger
+      const { data: profileData, error: profileError } = await supabase.from('profiles').upsert([{
         id: authData.user.id,
         email: email,
         full_name: full_name,
@@ -161,12 +166,35 @@ app.post('/api/users', async (req, res) => {
 
       res.json(profileData[0]);
   } catch (error) {
-      console.error("Error creando usuario:", error.message);
       res.status(500).json({ error: error.message });
   }
 });
 
-// Actualizar perfil de usuario
+// Guardar secreto 2FA
+app.post('/api/users/:id/2fa', async (req, res) => {
+  const { id } = req.params;
+  const { secret } = req.body;
+  try {
+      const { data, error } = await supabase.from('profiles').update({ two_factor_secret: secret }).eq('id', id).select();
+      if (error) throw error;
+      res.json(data[0]);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Resetear 2FA (Admin)
+app.post('/api/users/:id/reset-2fa', async (req, res) => {
+  const { id } = req.params;
+  try {
+      const { data, error } = await supabase.from('profiles').update({ two_factor_secret: null }).eq('id', id).select();
+      if (error) throw error;
+      res.json({ message: '2FA reseteado correctamente' });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
 app.put('/api/users/:id', async (req, res) => {
   const { id } = req.params;
   const { full_name, rol, phone_number } = req.body;
@@ -182,11 +210,9 @@ app.put('/api/users/:id', async (req, res) => {
   }
 });
 
-// Borrar usuario (De Auth y Profiles en cascada)
 app.delete('/api/users/:id', async (req, res) => {
   const { id } = req.params;
   try {
-      // Al borrarlo de Auth, tu regla ON DELETE CASCADE en Postgres lo borrará de Profiles
       const { error } = await supabase.auth.admin.deleteUser(id);
       if (error) throw error;
       res.json({ message: 'Usuario eliminado' });
@@ -196,7 +222,7 @@ app.delete('/api/users/:id', async (req, res) => {
 });
 
 // ==========================================
-// 2. Carrito de Compras (CRUD en cart_items)
+// 2. Carrito de Compras (Sync con Supabase)
 // ==========================================
 app.get('/api/cart/:userId', async (req, res) => {
   const { userId } = req.params;
@@ -239,39 +265,12 @@ app.post('/api/cart', async (req, res) => {
   }
 });
 
-app.delete('/api/cart/:userId/:videogameId', async (req, res) => {
-  const { userId, videogameId } = req.params;
-  try {
-      const { error } = await supabase.from('cart_items').delete().match({ user_id: userId, videogame_id: videogameId });
-      if (error) throw error;
-      res.json({ message: 'Item removido' });
-  } catch (error) {
-      res.status(500).json({ error: error.message });
-  }
-});
-
 app.delete('/api/cart/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
       const { error } = await supabase.from('cart_items').delete().eq('user_id', userId);
       if (error) throw error;
-      res.json({ message: 'Carrito vaciado' });
-  } catch (error) {
-      res.status(500).json({ error: error.message });
-  }
-});
-
-// Simulación de Compra
-app.post('/api/orders', async (req, res) => {
-  const { user_id, total } = req.body;
-  if (!user_id || !total) return res.status(400).json({ error: 'Faltan datos de la orden' });
-
-  try {
-      const { data, error } = await supabase.from('orders').insert([{ user_id, total, status: 'completed' }]).select();
-      if (error) throw error;
-
-      await supabase.from('cart_items').delete().eq('user_id', user_id);
-      res.json(data);
+      res.json({ message: 'Carrito vaciado exitosamente' });
   } catch (error) {
       res.status(500).json({ error: error.message });
   }
@@ -302,15 +301,20 @@ app.post('/api/biometrics/verify-registration', async (req, res) => {
 
   try {
     const verification = await verifyRegistrationResponse({
-      response: registrationResponse, expectedChallenge, expectedOrigin: origin, expectedRPID: rpID,
+      response: registrationResponse, 
+      expectedChallenge, 
+      expectedOrigin: expectedOrigins, // Acepta el array de orígenes
+      expectedRPID: rpID,
     });
 
     if (verification.verified) {
       const { registrationInfo } = verification;
       const { error } = await supabase.from('webauthn_credentials').insert([{
-        user_id, credential_id: Buffer.from(registrationInfo.credential.id).toString('base64'),
-        credential_public_key: Buffer.from(registrationInfo.credential.publicKey).toString('base64'),
-        counter: registrationInfo.credential.counter
+        user_id, 
+        credential_id: Buffer.from(registrationInfo.credential.id).toString('base64'),
+        public_key: Buffer.from(registrationInfo.credential.publicKey).toString('base64'),
+        counter: registrationInfo.credential.counter || 0,
+        device_type: req.headers['user-agent'] || 'Navegador Web'
       }]);
       if (error) throw error;
       
@@ -352,16 +356,19 @@ app.post('/api/biometrics/verify-authentication', async (req, res) => {
       if (!credential) return res.status(400).json({ error: 'Credencial no encontrada.' });
 
       const verification = await verifyAuthenticationResponse({
-        response: authenticationResponse, expectedChallenge, expectedOrigin: origin, expectedRPID: rpID,
+        response: authenticationResponse, 
+        expectedChallenge, 
+        expectedOrigin: expectedOrigins, // Acepta el array de orígenes
+        expectedRPID: rpID,
         authenticator: {
           credentialID: new Uint8Array(Buffer.from(credential.credential_id, 'base64')),
-          credentialPublicKey: new Uint8Array(Buffer.from(credential.credential_public_key, 'base64')),
+          credentialPublicKey: new Uint8Array(Buffer.from(credential.public_key, 'base64')),
           counter: credential.counter,
         },
       });
 
       if (verification.verified) {
-        await supabase.from('webauthn_credentials').update({ counter: verification.authenticationInfo.newCounter }).eq('credential_id', credential.credential_id);
+        await supabase.from('webauthn_credentials').update({ counter: verification.authenticationInfo.newCounter || 0 }).eq('credential_id', credential.credential_id);
         delete currentChallenges[user_id];
         return res.json({ verified: true });
       }
@@ -375,7 +382,7 @@ app.post('/api/biometrics/verify-authentication', async (req, res) => {
 app.get('/', (req, res) => { res.send('🎮 API de GameStore funcionando al 100%'); });
 app.get('/api/test-db', async (req, res) => {
     try {
-        const { data, error } = await supabase.from('pg_stat_activity').select('*').limit(1);
+        const { data, error } = await supabase.from('profiles').select('*').limit(1);
         if (error) throw error;
         res.json({ status: 'Éxito', mensaje: '🚀 ¡Conexión a Supabase establecida!' });
     } catch (error) { res.status(500).json({ error: error.message }); }

@@ -30,13 +30,15 @@ export class Login implements OnInit {
   codigo2FA = '';      
   mensaje2FA = '';     
   correoActual = '';   
+  uidActual = '';
+  esNuevo2FA = false;
 
   private router = inject(Router);
   private authService = inject(AuthService);
   public fingerprintService = inject(FingerprintService);
 
   ngOnInit() {
-    localStorage.removeItem('2fa_aprobado');
+    this.authService.clearLocalSession();
   }
 
   async loginConHuella() {
@@ -44,14 +46,9 @@ export class Login implements OnInit {
     const result = await this.fingerprintService.verifyFingerprint();
     if (result.success && result.userId) {
       try {
-        await this.authService.loginWithFingerprint(result.userId);
-        
-        // Asignamos el correo del perfil obtenido (que ahora está en sesión) a la variable temporal
-        const userSession = JSON.parse(localStorage.getItem('usuario_sesion') || '{}');
-        this.correoActual = userSession.email;
-
-        // Pasamos al flujo 2FA igual que el login normal
-        this.preparar2FA(this.correoActual);
+        const userData = await this.authService.loginWithFingerprint(result.userId);
+        this.correoActual = userData.email;
+        this.preparar2FA(userData);
       } catch (err) {
         this.mensajeError = 'Error al cargar perfil desde la huella.';
       }
@@ -89,9 +86,9 @@ export class Login implements OnInit {
 
     try {
       if (!this.modoRegistro) {
-        await this.authService.login(emailLimpio, passLimpio);
+        const userData = await this.authService.login(emailLimpio, passLimpio);
         this.correoActual = emailLimpio;
-        this.preparar2FA(emailLimpio);
+        this.preparar2FA(userData);
 
       } else {
         if (!nombreLimpio || !telLimpio) {
@@ -103,9 +100,9 @@ export class Login implements OnInit {
           return;
         }
 
-        await this.authService.registro(emailLimpio, passLimpio, nombreLimpio, telLimpio);
+        const userData = await this.authService.registro(emailLimpio, passLimpio, nombreLimpio, telLimpio);
         this.correoActual = emailLimpio;
-        this.preparar2FA(emailLimpio);
+        this.preparar2FA(userData);
       }
 
     } catch (error: any) {
@@ -120,25 +117,33 @@ export class Login implements OnInit {
     }
   }
 
-  preparar2FA(emailUsuario: string) {
+  preparar2FA(userData: any) {
     this.modo2FA = true; 
+    this.uidActual = userData.uid || userData.id;
     
-    const totp = new OTPAuth.TOTP({
-      issuer: 'GameStore',
-      label: emailUsuario,
-      algorithm: 'SHA1',
-      digits: 6,
-      period: 30,
-      secret: new OTPAuth.Secret({ size: 20 }) 
-    });
-    
-    this.secreto = totp.secret.base32;
-    this.qrCodeUrl = totp.toString(); 
-    
-    this.mensaje2FA = 'Escanea este QR desde tu app Microsoft Authenticator.';
+    if (userData.two_factor_secret) {
+      this.secreto = userData.two_factor_secret;
+      this.qrCodeUrl = ''; 
+      this.esNuevo2FA = false;
+      this.mensaje2FA = 'Ingresa el código de 6 dígitos de tu aplicación autenticadora.';
+    } else {
+      const totp = new OTPAuth.TOTP({
+        issuer: 'GameStore',
+        label: userData.email,
+        algorithm: 'SHA1',
+        digits: 6,
+        period: 30,
+        secret: new OTPAuth.Secret({ size: 20 }) 
+      });
+      
+      this.secreto = totp.secret.base32;
+      this.qrCodeUrl = totp.toString(); 
+      this.esNuevo2FA = true;
+      this.mensaje2FA = 'Escanea este QR desde tu app Microsoft Authenticator por única vez.';
+    }
   }
 
-  validarCodigo2FA() {
+  async validarCodigo2FA() {
     const tokenLimpio = this.codigo2FA.replace(/\s/g, '');
 
     const totp = new OTPAuth.TOTP({
@@ -153,6 +158,9 @@ export class Login implements OnInit {
     const delta = totp.validate({ token: tokenLimpio, window: 3 });
 
     if (delta !== null) {
+      if (this.esNuevo2FA) {
+        await this.authService.guardarSecreto2FA(this.uidActual, this.secreto);
+      }
       localStorage.setItem('2fa_aprobado', 'true');
       this.router.navigate(['/inicio']); 
     } else {

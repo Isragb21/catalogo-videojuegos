@@ -66,33 +66,6 @@
         </form>
       </div>
 
-      @if (usuarioEditandoId) {
-      <div class="glass-card form-card edit-user-form">
-        <h2>Editar Usuario</h2>
-        <form (ngSubmit)="actualizarUsuario()">
-          <div class="form-group glass-input-group">
-            <label>Nombre:</label>
-            <input type="text" [(ngModel)]="editarNombreUser" name="editarNombreUser" required />
-          </div>
-          <div class="form-group glass-input-group">
-            <label>Teléfono:</label>
-            <input type="tel" [(ngModel)]="editarTelefonoUser" name="editarTelefonoUser" />
-          </div>
-          <div class="form-group glass-input-group">
-            <label>Rol:</label>
-            <select [(ngModel)]="editarRolUser" name="editarRolUser" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px; outline: none;">
-              <option value="cliente" style="color: black;">Cliente</option>
-              <option value="admin" style="color: black;">Administrador</option>
-            </select>
-          </div>
-          <div style="display: flex; gap: 12px;">
-            <button type="submit" class="btn btn-save-game" style="flex: 1;">Actualizar Usuario</button>
-            <button type="button" class="btn btn-danger-red" style="flex: 1;" (click)="cancelarEdicionUsuario()">Cancelar</button>
-          </div>
-        </form>
-      </div>
-      }
-
       <div class="glass-card table-card current-inventory">
         <h2>Inventario Actual ({{ juegos.length }})</h2>
         <div class="table-container glass-table-container">
@@ -146,6 +119,7 @@
                     </span>
                   </td>
                   <td class="table-actions" style="display: flex; gap: 8px;">
+                    <button type="button" class="btn" style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="resetear2FA(user.id)">Reset 2FA</button>
                     @if (user.rol === 'cliente') {
                       <button type="button" class="btn" style="background: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.id, 'admin')">Hacer Admin</button>
                     }
@@ -194,6 +168,38 @@
             }
           </tbody>
         </table>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL FLOTANTE DE EDICIÓN DE USUARIO -->
+  @if (mostrarModalEdicion) {
+    <div class="modal-overlay">
+      <div class="modal-content">
+        <h3>Editar Usuario</h3>
+        
+        <div class="glass-input-group">
+          <label>Nombre Completo</label>
+          <input type="text" [(ngModel)]="editarNombreUser" placeholder="Ej. Juan Pérez">
+        </div>
+  
+        <div class="glass-input-group">
+          <label>Rol del Usuario</label>
+          <select [(ngModel)]="editarRolUser" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px; outline: none;">
+            <option value="cliente" style="color: black;">Cliente</option>
+            <option value="admin" style="color: black;">Administrador</option>
+          </select>
+        </div>
+  
+        <div class="glass-input-group">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="editarTelefonoUser" placeholder="Ej. 555-1234">
+        </div>
+  
+        <div class="modal-actions">
+          <button class="btn-cancel" (click)="cancelarEdicionUsuario()">Cancelar</button>
+          <button class="btn-save-user" (click)="actualizarUsuario()">Guardar Cambios</button>
+        </div>
       </div>
     </div>
   }

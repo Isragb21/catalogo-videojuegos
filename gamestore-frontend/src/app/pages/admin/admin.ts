@@ -43,6 +43,7 @@ export class Admin implements OnInit, OnDestroy {
   editarNombreUser: string = '';
   editarRolUser: string = 'cliente';
   editarTelefonoUser: string = '';
+  mostrarModalEdicion: boolean = false;
 
   // Seguridad
   esAdmin: boolean = false;
@@ -98,8 +99,8 @@ export class Admin implements OnInit, OnDestroy {
 
   obtenerJuegos() {
     this.videogameService.getVideogames().subscribe({
-      next: (data) => this.juegos = data,
-      error: (err) => console.error("Error obteniendo juegos", err)
+      next: (data: Videogame[]) => this.juegos = data,
+      error: (err: any) => console.error("Error obteniendo juegos", err)
     });
   }
 
@@ -119,11 +120,11 @@ export class Admin implements OnInit, OnDestroy {
     // Al agregar, TypeScript se quejará del ID si no lo casteamos correctamente en el servicio,
     // usamos `any` temporalmente para enviar la petición limpia.
     this.videogameService.addVideogame(nuevoJuego as any).subscribe({
-      next: (juegoCreado) => {
+      next: (juegoCreado: Videogame) => {
         this.juegos.push(juegoCreado); // Lo agregamos visualmente
         this.resetFormularioJuego();
       },
-      error: (err) => console.error("Error al guardar juego:", err)
+      error: (err: any) => console.error("Error al guardar juego:", err)
     });
   }
 
@@ -134,7 +135,7 @@ export class Admin implements OnInit, OnDestroy {
         next: () => {
           this.juegos = this.juegos.filter(j => j.id !== id); // Lo quitamos visualmente
         },
-        error: (err) => console.error("Error al borrar juego", err)
+        error: (err: any) => console.error("Error al borrar juego", err)
       });
     }
   }
@@ -178,7 +179,15 @@ export class Admin implements OnInit, OnDestroy {
 
   cambiarRol(id: string, nuevoRol: string) {
     this.http.put(`${this.apiUsersUrl}/${id}`, { rol: nuevoRol }).subscribe({
-      next: () => console.log('Rol actualizado'),
+      next: () => {
+        console.log('Rol actualizado');
+        // Actualizamos el rol localmente para que la vista cambie de inmediato
+        const userIndex = this.usuarios.findIndex(u => u.id === id);
+        if (userIndex !== -1) {
+          this.usuarios[userIndex].rol = nuevoRol;
+        }
+        alert(`✅ Rol actualizado exitosamente a: ${nuevoRol.toUpperCase()}`);
+      },
       error: (err) => console.error('Error al cambiar rol', err)
     });
   }
@@ -188,6 +197,7 @@ export class Admin implements OnInit, OnDestroy {
     this.editarNombreUser = user.full_name;
     this.editarRolUser = user.rol;
     this.editarTelefonoUser = user.phone_number || '';
+    this.mostrarModalEdicion = true;
   }
 
   actualizarUsuario() {
@@ -225,6 +235,7 @@ export class Admin implements OnInit, OnDestroy {
     this.editarNombreUser = '';
     this.editarRolUser = 'cliente';
     this.editarTelefonoUser = '';
+    this.mostrarModalEdicion = false;
   }
 
   borrarUsuario(id: string) {
@@ -234,6 +245,17 @@ export class Admin implements OnInit, OnDestroy {
           this.usuarios = this.usuarios.filter(u => u.id !== id);
         },
         error: (err) => console.error('Error al borrar usuario', err)
+      });
+    }
+  }
+
+  resetear2FA(id: string) {
+    if (confirm('¿Estás seguro de resetear el 2FA de este usuario? Tendrá que volver a escanear el código QR en su próximo inicio de sesión.')) {
+      this.authService.resetear2FA(id).then(() => {
+        alert('✅ 2FA reseteado exitosamente para este usuario.');
+      }).catch(err => {
+        console.error('Error al resetear 2FA', err);
+        alert('❌ Ocurrió un error al resetear el 2FA.');
       });
     }
   }
