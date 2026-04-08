@@ -369,7 +369,7 @@ app.post('/api/biometrics/generate-authentication-options', async (req, res) => 
 
       const options = await generateAuthenticationOptions({
         rpID, // dinámico
-        allowCredentials: credentials.map(c => ({ id: Buffer.from(c.credential_id, 'base64').toString('base64url'), type: 'public-key' })),
+        allowCredentials: credentials.map(c => ({ id: c.credential_id, type: 'public-key' })),
         userVerification: 'required',
       });
       currentChallenges[user_id] = options.challenge;
@@ -389,7 +389,7 @@ app.post('/api/biometrics/verify-authentication', async (req, res) => {
 
   try {
       const { data: credentials } = await supabase.from('webauthn_credentials').select('*').eq('user_id', user_id);
-      const credential = credentials.find(c => Buffer.from(c.credential_id, 'base64').toString('base64url') === authenticationResponse.id);
+      const credential = credentials.find(c => c.credential_id === authenticationResponse.id);
       if (!credential) return res.status(400).json({ error: 'Credencial no encontrada.' });
 
       const verification = await verifyAuthenticationResponse({
@@ -398,7 +398,7 @@ app.post('/api/biometrics/verify-authentication', async (req, res) => {
         expectedOrigin: expectedOrigins, // dinámico
         expectedRPID: rpID, // dinámico
         authenticator: {
-          credentialID: new Uint8Array(Buffer.from(credential.credential_id, 'base64')),
+          credentialID: new Uint8Array(Buffer.from(credential.credential_id, 'base64url')),
           credentialPublicKey: new Uint8Array(Buffer.from(credential.public_key, 'base64')),
           counter: credential.counter,
         },
