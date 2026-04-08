@@ -29,8 +29,10 @@ export class CarritoComponent implements OnInit {
   mensajeModal: string = '';
   modalExito: boolean = false;
   
+  accionModal: 'catalogo' | 'perfil' | 'cerrar' = 'catalogo';
+  textoBotonModal: string = 'Continuar Comprando';
+  
   // Variables para huella digital
-  mostrarModalRegistro: boolean = false;
   mostrarModalVerificacion: boolean = false;
   biometricoDisponible: boolean = false;
   tieneHuellaRegistrada: boolean = false;
@@ -78,54 +80,15 @@ export class CarritoComponent implements OnInit {
     }
 
     if (!this.tieneHuellaRegistrada) {
-      this.mostrarModalRegistro = true;
+      this.mensajeModal = '⚠️ Por seguridad, debes registrar tu huella en tu Perfil antes de pagar.';
+      this.accionModal = 'perfil';
+      this.textoBotonModal = 'Ir a mi Perfil';
+      this.mostrarModal = true;
       this.cdr.detectChanges();
       return;
     }
 
     this.mostrarModalVerificacion = true;
-    this.cdr.detectChanges();
-  }
-
-  async registrarHuella() {
-    const user = await firstValueFrom(this.auth.usuario$);
-    if (!user) return;
-    
-    const resultado = await this.fingerprintService.registerFingerprint(user.uid, user.email || 'usuario');
-    
-    if (resultado.success) {
-      this.tieneHuellaRegistrada = true;
-      this.mostrarModalRegistro = false;
-      this.mensajeModal = resultado.message;
-      this.modalExito = true;
-      this.mostrarModal = true;
-      this.cdr.detectChanges();
-      
-      setTimeout(() => {
-        this.mostrarModalVerificacion = true;
-        this.cdr.detectChanges();
-      }, 2000);
-    } else {
-      this.mensajeModal = resultado.message;
-      this.modalExito = false;
-      this.mostrarModal = true;
-      this.mostrarModalRegistro = false;
-      this.cdr.detectChanges();
-    }
-  }
-
-  cancelarRegistro() {
-    this.mostrarModalRegistro = false;
-    this.ejecutarPago();
-  }
-
-  // ✅ MÉTODO PARA LIMPIAR REGISTRO DE HUELLA
-  limpiarRegistroHuella() {
-    this.fingerprintService.clearFingerprintRegistration();
-    this.tieneHuellaRegistrada = false;
-    this.mensajeModal = '🗑️ Registro de huella eliminado. Puedes volver a registrarlo.';
-    this.modalExito = true;
-    this.mostrarModal = true;
     this.cdr.detectChanges();
   }
 
@@ -143,6 +106,8 @@ export class CarritoComponent implements OnInit {
     } else {
       this.mensajeModal = resultado.message;
       this.modalExito = false;
+      this.accionModal = 'cerrar';
+      this.textoBotonModal = 'Cerrar';
       this.mostrarModal = true;
       this.mostrarModalVerificacion = false;
       this.cdr.detectChanges();
@@ -161,6 +126,8 @@ export class CarritoComponent implements OnInit {
       this.procesando = false;
       this.modalExito = true;
       this.mensajeModal = '✅ ¡Pago realizado con éxito! Gracias por tu compra.';
+      this.accionModal = 'catalogo';
+      this.textoBotonModal = 'Continuar Comprando';
       this.mostrarModal = true;
       this.cdr.detectChanges();
       this.carritoService.vaciarCarrito();
@@ -170,6 +137,11 @@ export class CarritoComponent implements OnInit {
   cerrarModal() {
     this.mostrarModal = false;
     this.cdr.detectChanges();
-    this.router.navigate(['/catalogo']);
+    
+    if (this.accionModal === 'catalogo') {
+      this.router.navigate(['/catalogo']);
+    } else if (this.accionModal === 'perfil') {
+      this.router.navigate(['/perfil']);
+    }
   }
 }

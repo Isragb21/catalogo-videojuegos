@@ -24,6 +24,16 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: allowedOrigins, 
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        for (let o of allowedOrigins) {
+            if (o instanceof RegExp && o.test(origin)) return callback(null, true);
+            if (o === origin) return callback(null, true);
+        }
+        // Si llega aquí, imprime en los logs de Render quién intentó entrar
+        console.log("CORS Bloqueado para el origen:", origin);
+        return callback(new Error('Bloqueado por CORS: ' + origin), false);
+    },
     credentials: true 
 }));
 app.use(express.json());
@@ -117,9 +127,9 @@ app.post('/api/login', async (req, res) => {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+      const { data: profile, error: profileErr } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
       
-      res.json({ user: data.user, profile: profile, session: data.session });
+      res.json({ user: data.user, profile: profile || {}, session: data.session });
   } catch (error) {
       res.status(401).json({ error: error.message });
   }

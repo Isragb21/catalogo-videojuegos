@@ -72,24 +72,29 @@ export class Admin implements OnInit, OnDestroy {
 
       console.log("✅ AuthService detectó a:", usuario.email);
       
-      try {
-        const perfil = await this.authService.obtenerPerfil(usuario.uid || usuario.id);
-        // Ojo: En tu script SQL de Supabase no vi la columna 'rol'. 
-        // Asegúrate de agregarla en Supabase si vas a usar esta validación.
-        if (perfil && perfil['rol'] === 'admin') {
-          console.log("🛡️ Permisos de Administrador concedidos.");
-          this.esAdmin = true;
-          this.obtenerUsuarios(); 
-        } else {
-          console.log("🚫 Perfil encontrado, pero NO tiene rol='admin'.");
-          this.esAdmin = false;
+      // Leemos el rol directamente del caché local para no hacer peticiones HTTP extra que retrasen la pantalla
+      let rolDelUsuario = usuario.rol;
+
+      // Fallback: Si por alguna razón la sesión es muy antigua y no tiene el rol guardado, lo pedimos al backend
+      if (!rolDelUsuario) {
+        try {
+          const perfil = await this.authService.obtenerPerfil(usuario.uid || usuario.id);
+          rolDelUsuario = perfil?.rol;
+        } catch (error) {
+          console.error("Error pidiendo el perfil a AuthService:", error);
         }
-        this.cargandoRol = false;
-      } catch (error) {
-        console.error("Error pidiendo el perfil a AuthService:", error);
-        this.esAdmin = false;
-        this.cargandoRol = false; 
       }
+
+      if (rolDelUsuario === 'admin') {
+        console.log("🛡️ Permisos de Administrador concedidos.");
+        this.esAdmin = true;
+        this.obtenerUsuarios(); 
+      } else {
+        console.log("🚫 Perfil encontrado, pero NO tiene rol='admin'.");
+        this.esAdmin = false;
+      }
+      
+      this.cargandoRol = false;
     });
   }
 
