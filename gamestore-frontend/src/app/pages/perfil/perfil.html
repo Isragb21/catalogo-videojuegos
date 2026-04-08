@@ -11,59 +11,70 @@
         <p style="color: #bbb; font-size: 0.9rem;">Actualiza tu información de combate</p>
       </div>
 
-      <form (ngSubmit)="guardarCambios()">
-        
-        <div class="form-group glass-input-group" style="margin-bottom: 20px;">
-          <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Correo Electrónico:</label>
-          <input 
-            type="email" 
-            [value]="usuario.email" 
-            disabled 
-            style="width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #888; border-radius: 5px; cursor: not-allowed;" 
-          />
+      @if (!editando) {
+        <div style="color: #e0e0e0; font-size: 1.1rem; line-height: 1.8;">
+          <p style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;"><strong><span style="color: #00ed64;">Nombre:</span></strong> {{ usuario.full_name || 'No especificado' }}</p>
+          <p style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;"><strong><span style="color: #00ed64;">Email:</span></strong> {{ usuario.email }}</p>
+          <p style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;"><strong><span style="color: #00ed64;">Teléfono:</span></strong> {{ usuario.phone_number || 'No especificado' }}</p>
+          
+          <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px;">
+            <button type="button" (click)="activarEdicion()" style="width: 100%; padding: 15px; background: #00ed64; color: #000; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.boxShadow='0 0 15px rgba(0, 237, 100, 0.6)'" onmouseout="this.style.boxShadow='none'">
+              EDITAR INFORMACIÓN
+            </button>
+            <button type="button" (click)="registrarHuella()" style="width: 100%; padding: 15px; background: #333; color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; border: 1px solid #555; border-radius: 5px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'">
+              👆 REGISTRAR HUELLA PARA LOGIN
+            </button>
+          </div>
         </div>
-
-        <div class="form-group glass-input-group" style="margin-bottom: 20px;">
-          <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Nombre de Guerrero:</label>
-          <input 
-            type="text" 
-            [(ngModel)]="usuario.full_name" 
-            name="full_name" 
-            placeholder="Ej. MasterChief" 
-            style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px;"
-            required 
-          />
-        </div>
-
-        <div class="form-group glass-input-group" style="margin-bottom: 30px;">
-          <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Número de Contacto:</label>
-          <input 
-            type="tel" 
-            [(ngModel)]="usuario.phone_number" 
-            name="phone_number" 
-            placeholder="555-000-0000" 
-            style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px;"
-          />
-        </div>
-
-        <button 
-          type="submit" 
-          style="width: 100%; padding: 15px; background: #00ed64; color: #000; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; margin-bottom: 15px;"
-          onmouseover="this.style.boxShadow='0 0 15px rgba(0, 237, 100, 0.6)'"
-          onmouseout="this.style.boxShadow='none'">
-          GUARDAR CAMBIOS
-        </button>
-
-        <button 
-          type="button" 
-          (click)="registrarHuella()"
-          style="width: 100%; padding: 15px; background: #333; color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; border: 1px solid #555; border-radius: 5px; cursor: pointer; transition: 0.3s;"
-          onmouseover="this.style.background='#444'"
-          onmouseout="this.style.background='#333'">
-          👆 REGISTRAR HUELLA PARA LOGIN
-        </button>
-
-      </form>
+      } @else {
+        <form (ngSubmit)="guardarCambios()">
+          <div class="form-group glass-input-group" style="margin-bottom: 20px;">
+            <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Correo Electrónico:</label>
+            <input 
+              type="email" 
+              [value]="usuario.email" 
+              disabled 
+              style="width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #888; border-radius: 5px; cursor: not-allowed;" 
+            />
+          </div>
+          <div class="form-group glass-input-group" style="margin-bottom: 20px;">
+            <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Nombre de Guerrero:</label>
+            <input 
+              type="text" 
+              [(ngModel)]="usuario.full_name" 
+              name="full_name" 
+              placeholder="Ej. MasterChief" 
+              style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px;"
+              required 
+            />
+          </div>
+          <div class="form-group glass-input-group" style="margin-bottom: 30px;">
+            <label style="color: #00ed64; font-weight: 600; display: block; margin-bottom: 8px;">Número de Contacto:</label>
+            <input 
+              type="tel" 
+              [(ngModel)]="usuario.phone_number" 
+              name="phone_number" 
+              placeholder="555-000-0000" 
+              style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 237, 100, 0.3); color: #fff; border-radius: 5px;"
+            />
+          </div>
+          <button 
+            type="submit" 
+            style="width: 100%; padding: 15px; background: #00ed64; color: #000; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; margin-bottom: 15px;"
+            onmouseover="this.style.boxShadow='0 0 15px rgba(0, 237, 100, 0.6)'"
+            onmouseout="this.style.boxShadow='none'">
+            GUARDAR CAMBIOS
+          </button>
+          <button 
+            type="button" 
+            (click)="cancelarEdicion()"
+            style="width: 100%; padding: 15px; background: #ff4c4c; color: #fff; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s;"
+            onmouseover="this.style.boxShadow='0 0 15px rgba(255, 76, 76, 0.6)'"
+            onmouseout="this.style.boxShadow='none'">
+            CANCELAR
+          </button>
+        </form>
+      }
     </div>
   }
 

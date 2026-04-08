@@ -303,7 +303,7 @@ app.post('/api/biometrics/generate-registration-options', async (req, res) => {
         authenticatorSelection: { 
           authenticatorAttachment: 'platform', 
           residentKey: 'required', 
-          userVerification: 'preferred' 
+          userVerification: 'required' 
         },
       });
       currentChallenges[user_id] = options.challenge;
@@ -360,7 +360,7 @@ app.post('/api/biometrics/generate-authentication-options', async (req, res) => 
       const options = await generateAuthenticationOptions({
         rpID, // dinámico
         allowCredentials: credentials.map(c => ({ id: Buffer.from(c.credential_id, 'base64').toString('base64url'), type: 'public-key' })),
-        userVerification: 'preferred',
+        userVerification: 'required',
       });
       currentChallenges[user_id] = options.challenge;
       res.json(options);
