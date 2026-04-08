@@ -60,8 +60,8 @@ export class FingerprintService {
     }
   }
 
-  async verifyFingerprint(): Promise<{ success: boolean; message: string; userId?: string }> {
-    const userId = localStorage.getItem('fingerprint_user_id');
+  async verifyFingerprint(userIdParam?: string): Promise<{ success: boolean; message: string; userId?: string }> {
+    const userId = userIdParam || localStorage.getItem('fingerprint_user_id');
     if (!userId) {
       return { success: false, message: 'Primero debes registrarla accediendo a tu perfil' };
     }

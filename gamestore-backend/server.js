@@ -343,7 +343,7 @@ app.post('/api/biometrics/verify-registration', async (req, res) => {
       const { registrationInfo } = verification;
       const { error } = await supabase.from('webauthn_credentials').insert([{
         user_id, 
-        credential_id: Buffer.from(registrationInfo.credential.id).toString('base64'),
+        credential_id: registrationInfo.credential.id,
         public_key: Buffer.from(registrationInfo.credential.publicKey).toString('base64'),
         counter: registrationInfo.credential.counter || 0,
         device_type: req.headers['user-agent'] || 'Navegador Web'

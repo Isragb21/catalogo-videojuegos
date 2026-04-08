@@ -96,7 +96,10 @@ export class CarritoComponent implements OnInit {
     this.verificandoBiometrico = true;
     this.cdr.detectChanges();
     
-    const resultado = await this.fingerprintService.verifyFingerprint();
+    const user = await firstValueFrom(this.auth.usuario$);
+    const userId = user?.uid || user?.id;
+
+    const resultado = await this.fingerprintService.verifyFingerprint(userId);
     
     this.verificandoBiometrico = false;
     
