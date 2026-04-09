@@ -397,9 +397,9 @@ app.post('/api/biometrics/verify-authentication', async (req, res) => {
         expectedChallenge, 
         expectedOrigin: expectedOrigins, // dinámico
         expectedRPID: rpID, // dinámico
-        authenticator: {
-          credentialID: new Uint8Array(Buffer.from(credential.credential_id, 'base64url')),
-          credentialPublicKey: new Uint8Array(Buffer.from(credential.public_key, 'base64')),
+        credential: {
+          id: credential.credential_id,
+          publicKey: new Uint8Array(Buffer.from(credential.public_key, 'base64')),
           counter: credential.counter,
         },
       });
