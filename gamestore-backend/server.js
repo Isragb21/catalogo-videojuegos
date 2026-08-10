@@ -144,9 +144,14 @@ app.post('/api/login', async (req, res) => {
   try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      
+
       const { data: profile, error: profileErr } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
-      
+
+      // Bloquear acceso a usuarios dados de baja
+      if (profile?.is_active === false) {
+          return res.status(403).json({ error: 'Tu cuenta está desactivada. Contacta al administrador.' });
+      }
+
       res.json({ user: data.user, profile: profile || {}, session: data.session });
   } catch (error) {
       res.status(401).json({ error: error.message });
@@ -411,6 +416,13 @@ app.post('/api/biometrics/generate-authentication-options', async (req, res) => 
   const { user_id } = req.body;
   const { rpID } = getWebAuthnConfig(req);
   try {
+      // Bloquear usuarios dados de baja
+      const { data: perfil, error: perfilErr } = await supabase.from('profiles').select('is_active').eq('id', user_id).single();
+      if (perfilErr) throw perfilErr;
+      if (perfil?.is_active === false) {
+          return res.status(403).json({ error: 'Tu cuenta está desactivada. Contacta al administrador.' });
+      }
+
       const { data: credentials, error } = await supabase.from('webauthn_credentials').select('*').eq('user_id', user_id);
       if (error || !credentials.length) return res.status(404).json({ error: 'Sin credenciales biométricas.' });
 
@@ -435,6 +447,13 @@ app.post('/api/biometrics/verify-authentication', async (req, res) => {
   const { rpID, expectedOrigins } = getWebAuthnConfig(req);
 
   try {
+      // Bloquear usuarios dados de baja
+      const { data: perfil, error: perfilErr } = await supabase.from('profiles').select('is_active').eq('id', user_id).single();
+      if (perfilErr) throw perfilErr;
+      if (perfil?.is_active === false) {
+          return res.status(403).json({ error: 'Tu cuenta está desactivada. Contacta al administrador.' });
+      }
+
       const { data: credentials } = await supabase.from('webauthn_credentials').select('*').eq('user_id', user_id);
       const credential = credentials.find(c => c.credential_id === authenticationResponse.id);
       if (!credential) return res.status(400).json({ error: 'Credencial no encontrada.' });

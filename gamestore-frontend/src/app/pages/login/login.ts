@@ -107,7 +107,9 @@ export class Login implements OnInit {
 
     } catch (error: any) {
       const errorMsg = error.error?.error || error.message || '';
-      if (errorMsg.includes('Invalid login credentials') || errorMsg.includes('invalid-credential') || error.status === 401) {
+      if (errorMsg.includes('desactivada') || errorMsg.includes('desactivada. Contacta') || error.status === 403) {
+        this.mensajeError = 'Tu cuenta está desactivada. Contacta al administrador.';
+      } else if (errorMsg.includes('Invalid login credentials') || errorMsg.includes('invalid-credential') || error.status === 401) {
         this.mensajeError = 'Correo o contrasena incorrectos.';
       } else if (errorMsg.includes('already registered') || errorMsg.includes('already-in-use') || error.status === 400) {
         this.mensajeError = 'Este correo ya esta registrado.';
