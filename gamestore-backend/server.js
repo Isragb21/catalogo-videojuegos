@@ -76,7 +76,11 @@ function getWebAuthnConfig(req) {
 // ==========================================
 app.get('/api/videogames', async (req, res) => {
   try {
-      const { data, error } = await supabase.from('videogames').select('*').order('created_at', { ascending: false });
+      // Solo catálogo de juegos activos
+      const { data, error } = await supabase.from('videogames')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
       if (error) throw error;
       res.json(data);
   } catch (error) {
@@ -112,6 +116,20 @@ app.delete('/api/videogames/:id', async (req, res) => {
       const { error } = await supabase.from('videogames').delete().eq('id', id);
       if (error) throw error;
       res.json({ message: 'Juego eliminado correctamente' });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Baja lógica de un videojuego
+app.patch('/api/videogames/:id/logical-delete', async (req, res) => {
+  const { id } = req.params;
+  try {
+      const { error } = await supabase.from('videogames')
+        .update({ is_active: false })
+        .eq('id', id);
+      if (error) throw error;
+      res.json({ message: 'Juego dado de baja (inactivo)' });
   } catch (error) {
       res.status(500).json({ error: error.message });
   }
@@ -158,7 +176,7 @@ app.get('/api/users/:id', async (req, res) => {
 
 app.get('/api/users', async (req, res) => {
   try {
-      const { data, error } = await supabase.from('profiles').select('*');
+      const { data, error } = await supabase.from('profiles').select('*').eq('is_active', true);
       if (error) throw error;
       res.json(data);
   } catch (error) {
@@ -240,6 +258,20 @@ app.delete('/api/users/:id', async (req, res) => {
       const { error } = await supabase.auth.admin.deleteUser(id);
       if (error) throw error;
       res.json({ message: 'Usuario eliminado' });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Baja lógica de un usuario
+app.patch('/api/users/:id/logical-delete', async (req, res) => {
+  const { id } = req.params;
+  try {
+      const { error } = await supabase.from('profiles')
+        .update({ is_active: false })
+        .eq('id', id);
+      if (error) throw error;
+      res.json({ message: 'Usuario dado de baja (inactivo)' });
   } catch (error) {
       res.status(500).json({ error: error.message });
   }

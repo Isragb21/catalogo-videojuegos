@@ -137,12 +137,24 @@ export class Admin implements OnInit, OnDestroy {
 
   borrarJuego(id: string | undefined) {
     if (!id) return;
-    if (confirm('¿Eliminar este videojuego?')) {
+    if (confirm('¿Eliminar PERMANENTEMENTE este videojuego? Esta acción no se puede deshacer.')) {
       this.videogameService.deleteVideogame(id).subscribe({
         next: () => {
           this.juegos = this.juegos.filter(j => j.id !== id); // Lo quitamos visualmente
         },
         error: (err: any) => console.error("Error al borrar juego", err)
+      });
+    }
+  }
+
+  inactivarJuego(id: string) {
+    if (confirm('¿Dar de BAJA (inactivar) este videojuego?')) {
+      this.http.patch(`${this.apiConfig.baseUrl}/videogames/${id}/logical-delete`, {}).subscribe({
+        next: () => {
+          this.juegos = this.juegos.filter(j => j.id !== id);
+          alert('✅ Juego dado de baja (inactivo).');
+        },
+        error: (err: any) => console.error("Error al inactivar juego", err)
       });
     }
   }
@@ -246,12 +258,24 @@ export class Admin implements OnInit, OnDestroy {
   }
 
   borrarUsuario(id: string) {
-    if (confirm('¿Estás seguro de eliminar este usuario?')) {
+    if (confirm('¿Estás seguro de eliminar PERMANENTEMENTE este usuario? Esta acción no se puede deshacer.')) {
       this.http.delete(`${this.apiUsersUrl}/${id}`).subscribe({
         next: () => {
           this.usuarios = this.usuarios.filter(u => u.id !== id);
         },
         error: (err) => console.error('Error al borrar usuario', err)
+      });
+    }
+  }
+
+  inactivarUsuario(id: string) {
+    if (confirm('¿Dar de BAJA (inactivar) este usuario?')) {
+      this.http.patch(`${this.apiUsersUrl}/${id}/logical-delete`, {}).subscribe({
+        next: () => {
+          this.usuarios = this.usuarios.filter(u => u.id !== id);
+          alert('✅ Usuario dado de baja (inactivo).');
+        },
+        error: (err) => console.error('Error al inactivar usuario', err)
       });
     }
   }

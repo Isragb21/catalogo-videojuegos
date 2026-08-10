@@ -86,7 +86,8 @@
                   <td>{{ juego.title }}</td>
                   <td>{{ juego.platform }}</td>
                   <td class="table-price neon-text-green">${{ juego.price }}</td>
-                  <td class="table-actions">
+                  <td class="table-actions" style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-warning-yellow btn-logical" (click)="inactivarJuego(juego.id!)">Dar de Baja</button>
                     <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarJuego(juego.id!)">Eliminar</button>
                   </td>
                 </tr>
@@ -127,6 +128,7 @@
                     @if (user.rol === 'admin') {
                       <button type="button" class="btn" style="background: #ffc107; color: black; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.id, 'cliente')">Quitar Admin</button>
                     }
+                    <button type="button" class="btn btn-warning-yellow btn-logical" (click)="inactivarUsuario(user.id)">Dar de Baja</button>
                     <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarUsuario(user.id)">Eliminar</button>
                   </td>
                 </tr>
