@@ -106,17 +106,23 @@
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Rol</th>
+                <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               @for (user of usuarios; track user.id) {
-                <tr>
+                <tr [style.opacity]="user.is_active === false ? 0.55 : 1">
                   <td>{{ user.full_name }}</td>
                   <td>{{ user.email }}</td>
                   <td>
                     <span [style.color]="user.rol === 'admin' ? '#ffc107' : '#00ed64'" style="font-weight: bold; text-transform: uppercase;">
                       {{ user.rol }}
+                    </span>
+                  </td>
+                  <td>
+                    <span [style.color]="user.is_active === false ? '#ff4c4c' : '#00ed64'" style="font-weight: bold;">
+                      {{ user.is_active === false ? 'INACTIVO' : 'ACTIVO' }}
                     </span>
                   </td>
                   <td class="table-actions" style="display: flex; gap: 8px;">
@@ -128,7 +134,11 @@
                     @if (user.rol === 'admin') {
                       <button type="button" class="btn" style="background: #ffc107; color: black; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.id, 'cliente')">Quitar Admin</button>
                     }
-                    <button type="button" class="btn btn-warning-yellow btn-logical" (click)="inactivarUsuario(user.id)">Dar de Baja</button>
+                    @if (user.is_active === false) {
+                      <button type="button" class="btn btn-logical" style="background: #28a745; color: white;" (click)="reactivarUsuario(user.id)">Reactivar</button>
+                    } @else {
+                      <button type="button" class="btn btn-warning-yellow btn-logical" (click)="inactivarUsuario(user.id)">Dar de Baja</button>
+                    }
                     <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarUsuario(user.id)">Eliminar</button>
                   </td>
                 </tr>

@@ -272,10 +272,24 @@ export class Admin implements OnInit, OnDestroy {
     if (confirm('¿Dar de BAJA (inactivar) este usuario?')) {
       this.http.patch(`${this.apiUsersUrl}/${id}/logical-delete`, {}).subscribe({
         next: () => {
-          this.usuarios = this.usuarios.filter(u => u.id !== id);
+          const userIndex = this.usuarios.findIndex(u => u.id === id);
+          if (userIndex !== -1) this.usuarios[userIndex].is_active = false;
           alert('✅ Usuario dado de baja (inactivo).');
         },
         error: (err) => console.error('Error al inactivar usuario', err)
+      });
+    }
+  }
+
+  reactivarUsuario(id: string) {
+    if (confirm('¿Reactivar este usuario?')) {
+      this.http.patch(`${this.apiUsersUrl}/${id}/restore`, {}).subscribe({
+        next: () => {
+          const userIndex = this.usuarios.findIndex(u => u.id === id);
+          if (userIndex !== -1) this.usuarios[userIndex].is_active = true;
+          alert('✅ Usuario reactivado.');
+        },
+        error: (err) => console.error('Error al reactivar usuario', err)
       });
     }
   }
@@ -303,4 +317,4 @@ export class Admin implements OnInit, OnDestroy {
 }
 
 // Interfaces actualizadas para coincidir con tu backend/DB
-interface Usuario { id: string; full_name: string; email: string; rol: string; phone_number?: string; }
+interface Usuario { id: string; full_name: string; email: string; rol: string; phone_number?: string; is_active?: boolean; }

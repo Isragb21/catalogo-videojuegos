@@ -176,7 +176,8 @@ app.get('/api/users/:id', async (req, res) => {
 
 app.get('/api/users', async (req, res) => {
   try {
-      const { data, error } = await supabase.from('profiles').select('*').eq('is_active', true);
+      // Traemos TODOS (activos e inactivos) para que el admin vea el estado
+      const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       res.json(data);
   } catch (error) {
@@ -272,6 +273,20 @@ app.patch('/api/users/:id/logical-delete', async (req, res) => {
         .eq('id', id);
       if (error) throw error;
       res.json({ message: 'Usuario dado de baja (inactivo)' });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Reactivar un usuario
+app.patch('/api/users/:id/restore', async (req, res) => {
+  const { id } = req.params;
+  try {
+      const { error } = await supabase.from('profiles')
+        .update({ is_active: true })
+        .eq('id', id);
+      if (error) throw error;
+      res.json({ message: 'Usuario reactivado' });
   } catch (error) {
       res.status(500).json({ error: error.message });
   }
