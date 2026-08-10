@@ -20,6 +20,7 @@ export class App implements OnInit, OnDestroy {
   
   esAdmin: boolean = false;
   cantidadCarrito: number = 0;
+  menuAbierto: boolean = false;
   private authSubscription?: Subscription;
   private carritoSubscription?: Subscription;
 
@@ -47,6 +48,15 @@ export class App implements OnInit, OnDestroy {
 
   async cerrarSesion() {
     await this.auth.logout();
+    this.menuAbierto = false;
     this.router.navigate(['/login']);
+  }
+
+  toggleMenu() {
+    this.menuAbierto = !this.menuAbierto;
+  }
+
+  cerrarMenu() {
+    this.menuAbierto = false;
   }
 }

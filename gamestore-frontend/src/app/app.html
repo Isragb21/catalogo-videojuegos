@@ -1,43 +1,53 @@
-<nav class="navbar-cyber">
-  <div class="nav-blur-bg"></div>
-  
-  <div class="nav-container">
-    <div class="logo-wrapper" routerLink="/inicio">
-      <div class="logo-icon"><span class="icon-inner">G</span></div>
-      <span class="logo-text">Game<span class="text-neon">Store</span></span>
-    </div>
+<!-- Botón hamburguesa (3 líneas) -->
+<button class="hamburger-btn" (click)="toggleMenu()" [class.abierto]="menuAbierto" aria-label="Menú lateral">
+  <span class="linea"></span>
+  <span class="linea"></span>
+  <span class="linea"></span>
+</button>
 
-    <ul class="nav-links">
-      <li><a routerLink="/inicio" routerLinkActive="active">Inicio</a></li>
-      <li><a routerLink="/informacion" routerLinkActive="active">Información</a></li>
-      <li><a routerLink="/catalogo" routerLinkActive="active">Catálogo</a></li>
-    </ul>
+<!-- Overlay oscurecido al abrir el menú -->
+@if (menuAbierto) {
+  <div class="sidebar-overlay" (click)="cerrarMenu()"></div>
+}
 
-    <div class="auth-section">
-      @if (auth.usuario$ | async; as user) {
-        <div class="user-control">
-          <div class="user-meta">
-            <span class="welcome-text">Bienvenido,</span>
-            <span class="user-email">{{ user.email }}</span>
-          </div>
-          <div class="nav-actions">
-            <!-- Icono del carrito con contador -->
-            <a routerLink="/carrito" class="btn-icon carrito-icon">
-              🛒
-              <span *ngIf="cantidadCarrito > 0" class="carrito-count">{{ cantidadCarrito }}</span>
-            </a>
-            <a routerLink="/perfil" class="btn-icon">👤</a>
-            <a *ngIf="esAdmin" routerLink="/admin" class="btn-icon admin-glow">⚙️</a>
-            <button (click)="cerrarSesion()" class="btn-logout-neon">SALIR</button>
-          </div>
-        </div>
-      } @else {
-        <button routerLink="/login" class="btn-login-cyber">ACCESO GAMER</button>
-      }
-    </div>
+<!-- Sidebar lateral retráctil -->
+<aside class="sidebar-cyber" [class.abierto]="menuAbierto">
+  <div class="sidebar-scan"></div>
+
+  <div class="logo-wrapper" routerLink="/inicio" (click)="cerrarMenu()">
+    <div class="logo-icon"><span class="icon-inner">G</span></div>
+    <span class="logo-text">Game<span class="text-neon">Store</span></span>
   </div>
-  <div class="nav-bottom-line"></div>
-</nav>
+
+  <ul class="nav-links">
+    <li><a routerLink="/inicio" routerLinkActive="active" (click)="cerrarMenu()">Inicio</a></li>
+    <li><a routerLink="/informacion" routerLinkActive="active" (click)="cerrarMenu()">Información</a></li>
+    <li><a routerLink="/catalogo" routerLinkActive="active" (click)="cerrarMenu()">Catálogo</a></li>
+  </ul>
+
+  <div class="auth-section sidebar-auth">
+    @if (auth.usuario$ | async; as user) {
+      <div class="user-control">
+        <div class="user-meta">
+          <span class="welcome-text">Bienvenido,</span>
+          <span class="user-email">{{ user.email }}</span>
+        </div>
+        <div class="nav-actions">
+          <!-- Icono del carrito con contador -->
+          <a routerLink="/carrito" class="btn-icon carrito-icon" (click)="cerrarMenu()">
+            🛒
+            <span *ngIf="cantidadCarrito > 0" class="carrito-count">{{ cantidadCarrito }}</span>
+          </a>
+          <a routerLink="/perfil" class="btn-icon" (click)="cerrarMenu()">👤</a>
+          <a *ngIf="esAdmin" routerLink="/admin" class="btn-icon admin-glow" (click)="cerrarMenu()">⚙️</a>
+          <button (click)="cerrarSesion()" class="btn-logout-neon">SALIR</button>
+        </div>
+      </div>
+    } @else {
+      <button routerLink="/login" class="btn-login-cyber" (click)="cerrarMenu()">ACCESO GAMER</button>
+    }
+  </div>
+</aside>
 
 <main class="main-content">
   <router-outlet></router-outlet>
