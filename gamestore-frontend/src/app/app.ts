@@ -21,6 +21,8 @@ export class App implements OnInit, OnDestroy {
   esAdmin: boolean = false;
   cantidadCarrito: number = 0;
   menuAbierto: boolean = false;
+  version = '1.2.0';
+  versionGit = 'd56bb93';
   private authSubscription?: Subscription;
   private carritoSubscription?: Subscription;
 

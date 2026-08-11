@@ -283,3 +283,29 @@
 .main-content {
   padding: 80px 24px 20px;
 }
+
+/* VERSIÓN EN EL SIDEBAR */
+.sidebar-version {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 237, 100, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.sidebar-version span {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #00ed64;
+  text-shadow: 0 0 8px rgba(0, 237, 100, 0.5);
+  letter-spacing: 1px;
+}
+
+.sidebar-version small {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.65rem;
+  color: #777;
+}
