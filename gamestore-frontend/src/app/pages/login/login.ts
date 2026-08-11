@@ -74,11 +74,6 @@ export class Login implements OnInit {
     const nombreLimpio = this.nombre.trim();
     const telLimpio = this.telefono.trim();
 
-    if (!emailLimpio.endsWith('@uteq.edu.mx')) {
-      this.mensajeError = 'Solo correos @uteq.edu.mx';
-      return; 
-    }
-
     if (passLimpio.length < 6) {
       this.mensajeError = 'Minimo 6 caracteres';
       return;
