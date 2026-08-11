@@ -184,7 +184,20 @@ app.get('/api/users', async (req, res) => {
       // Traemos TODOS (activos e inactivos) para que el admin vea el estado
       const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      res.json(data);
+
+      // Obtenemos la fecha de último inicio de sesión desde Auth
+      let mapLogin = new Map();
+      try {
+          const { data: authUsers } = await supabase.auth.admin.listUsers();
+          (authUsers?.users || []).forEach(u => {
+              if (u.id) mapLogin.set(u.id, u.last_sign_in_at || null);
+          });
+      } catch (e) {
+          console.error("Error al obtener last_sign_in_at:", e.message);
+      }
+
+      const usuarios = (data || []).map(p => ({ ...p, last_sign_in_at: mapLogin.get(p.id) || null }));
+      res.json(usuarios);
   } catch (error) {
       res.status(500).json({ error: error.message });
   }

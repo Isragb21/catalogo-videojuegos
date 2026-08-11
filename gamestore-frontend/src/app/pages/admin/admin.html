@@ -106,6 +106,8 @@
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Rol</th>
+                <th>Registrado</th>
+                <th>Último Acceso</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -120,6 +122,8 @@
                       {{ user.rol }}
                     </span>
                   </td>
+                  <td>{{ formatearFecha(user.created_at) }}</td>
+                  <td>{{ formatearFecha(user.last_sign_in_at) }}</td>
                   <td>
                     <span [style.color]="user.is_active === false ? '#ff4c4c' : '#00ed64'" style="font-weight: bold;">
                       {{ user.is_active === false ? 'INACTIVO' : 'ACTIVO' }}

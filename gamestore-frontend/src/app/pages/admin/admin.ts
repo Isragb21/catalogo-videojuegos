@@ -314,7 +314,18 @@ export class Admin implements OnInit, OnDestroy {
   resetFormularioUsuario() {
     this.nuevoNombreUser = ''; this.nuevoEmailUser = ''; this.nuevoPasswordUser = ''; this.nuevoRolUser = 'cliente'; this.nuevoTelefonoUser = '';
   }
+
+  formatearFecha(fecha?: string | null): string {
+    if (!fecha) return '—';
+    try {
+      const d = new Date(fecha);
+      if (isNaN(d.getTime())) return fecha;
+      return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch {
+      return fecha;
+    }
+  }
 }
 
 // Interfaces actualizadas para coincidir con tu backend/DB
-interface Usuario { id: string; full_name: string; email: string; rol: string; phone_number?: string; is_active?: boolean; }
+interface Usuario { id: string; full_name: string; email: string; rol: string; phone_number?: string; is_active?: boolean; created_at?: string; last_sign_in_at?: string | null; }
