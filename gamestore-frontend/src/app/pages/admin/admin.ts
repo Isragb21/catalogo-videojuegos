@@ -30,7 +30,23 @@ export class Admin implements OnInit, OnDestroy {
   nuevaPlatform: string = '';
   nuevaImageUrl: string = '';
   nuevoPrice: number | null = null;
+  nuevoStock: number | null = 10;
+  nuevaImagenFile: File | null = null;
+  previewNuevaImagen: string | null = null;
+  subiendoImagen: boolean = false;
   juegos: Videogame[] = [];
+
+  // Campos para editar videojuego
+  juegoEditandoId: string | null = null;
+  editarTitle: string = '';
+  editarPlatform: string = '';
+  editarPrice: number | null = null;
+  editarStock: number | null = null;
+  editarImageUrl: string = '';
+  editarImagePath: string = '';
+  editarImagenFile: File | null = null;
+  previewEditarImagen: string | null = null;
+  mostrarModalEdicionJuego: boolean = false;
 
   // Variables de Usuarios
   usuarios: Usuario[] = [];
@@ -111,28 +127,141 @@ export class Admin implements OnInit, OnDestroy {
     });
   }
 
+  // Maneja la selección de imagen para un NUEVO juego
+  onArchivoNuevo(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files && input.files[0] ? input.files[0] : null;
+    this.nuevaImagenFile = file;
+    this.previewNuevaImagen = file ? URL.createObjectURL(file) : null;
+  }
+
+  // Maneja la selección de imagen al EDITAR un juego
+  onArchivoEditar(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files && input.files[0] ? input.files[0] : null;
+    this.editarImagenFile = file;
+    this.previewEditarImagen = file ? URL.createObjectURL(file) : null;
+  }
+
   agregarJuego() {
     if (!this.nuevoTitle || !this.nuevaPlatform) return;
-    
-    // Armamos el objeto tal cual lo espera Express y Supabase
-    const nuevoJuego = {
-      title: this.nuevoTitle,
-      platform: this.nuevaPlatform,
-      image_url: this.nuevaImageUrl || 'https://via.placeholder.com/150',
-      price: Number(this.nuevoPrice) || 0,
-      stock: 10, // Valor por defecto
-      is_active: true
+
+    const crearJuego = (image_url: string, image_path: string) => {
+      // Armamos el objeto tal cual lo espera Express y Supabase
+      const nuevoJuego = {
+        title: this.nuevoTitle,
+        platform: this.nuevaPlatform,
+        image_url: image_url || 'https://via.placeholder.com/150',
+        image_path: image_path || '',
+        price: Number(this.nuevoPrice) || 0,
+        stock: this.nuevoStock === null || this.nuevoStock === undefined ? 10 : Number(this.nuevoStock),
+        is_active: true
+      };
+
+      this.videogameService.addVideogame(nuevoJuego as any).subscribe({
+        next: (juegoCreado: Videogame) => {
+          this.juegos.push(juegoCreado); // Lo agregamos visualmente
+          this.resetFormularioJuego();
+        },
+        error: (err: any) => console.error("Error al guardar juego:", err)
+      });
     };
 
-    // Al agregar, TypeScript se quejará del ID si no lo casteamos correctamente en el servicio,
-    // usamos `any` temporalmente para enviar la petición limpia.
-    this.videogameService.addVideogame(nuevoJuego as any).subscribe({
-      next: (juegoCreado: Videogame) => {
-        this.juegos.push(juegoCreado); // Lo agregamos visualmente
-        this.resetFormularioJuego();
-      },
-      error: (err: any) => console.error("Error al guardar juego:", err)
-    });
+    // Si hay archivo, primero lo subimos a Supabase Storage
+    if (this.nuevaImagenFile) {
+      this.subiendoImagen = true;
+      this.videogameService.uploadImage(this.nuevaImagenFile).subscribe({
+        next: (res) => {
+          this.subiendoImagen = false;
+          crearJuego(res.image_url, res.image_path);
+        },
+        error: (err: any) => {
+          this.subiendoImagen = false;
+          console.error("Error al subir imagen:", err);
+          alert('❌ No se pudo subir la imagen.');
+        }
+      });
+    } else {
+      crearJuego('', '');
+    }
+  }
+
+  // ================= EDITAR VIDEOJUEGO =================
+
+  iniciarEdicionJuego(juego: Videogame) {
+    this.juegoEditandoId = juego.id || null;
+    this.editarTitle = juego.title;
+    this.editarPlatform = juego.platform;
+    this.editarPrice = juego.price;
+    this.editarStock = juego.stock ?? 0;
+    this.editarImageUrl = juego.image_url || '';
+    this.editarImagePath = juego.image_path || '';
+    this.editarImagenFile = null;
+    this.previewEditarImagen = null;
+    this.mostrarModalEdicionJuego = true;
+  }
+
+  cancelarEdicionJuego() {
+    this.juegoEditandoId = null;
+    this.editarTitle = '';
+    this.editarPlatform = '';
+    this.editarPrice = null;
+    this.editarStock = null;
+    this.editarImageUrl = '';
+    this.editarImagePath = '';
+    this.editarImagenFile = null;
+    this.previewEditarImagen = null;
+    this.mostrarModalEdicionJuego = false;
+  }
+
+  actualizarJuego() {
+    if (!this.juegoEditandoId) return;
+    if (!this.editarTitle || !this.editarPlatform) {
+      alert('⚠️ El título y la plataforma son obligatorios');
+      return;
+    }
+
+    const guardar = (image_url: string, image_path: string) => {
+      const payload: any = {
+        title: this.editarTitle,
+        platform: this.editarPlatform,
+        price: Number(this.editarPrice) || 0,
+        stock: this.editarStock === null || this.editarStock === undefined ? 0 : Number(this.editarStock),
+        image_url,
+        image_path
+      };
+
+      this.videogameService.updateVideogame(this.juegoEditandoId!, payload).subscribe({
+        next: (juegoActualizado: Videogame) => {
+          const index = this.juegos.findIndex(j => j.id === this.juegoEditandoId);
+          if (index !== -1) this.juegos[index] = { ...this.juegos[index], ...juegoActualizado };
+          this.cancelarEdicionJuego();
+          alert('✅ Videojuego actualizado correctamente');
+        },
+        error: (err: any) => {
+          console.error("Error al actualizar juego:", err);
+          alert('❌ No se pudo actualizar el videojuego.');
+        }
+      });
+    };
+
+    // Si se eligió una nueva imagen, la subimos (el backend borra la anterior)
+    if (this.editarImagenFile) {
+      this.subiendoImagen = true;
+      this.videogameService.uploadImage(this.editarImagenFile).subscribe({
+        next: (res) => {
+          this.subiendoImagen = false;
+          guardar(res.image_url, res.image_path);
+        },
+        error: (err: any) => {
+          this.subiendoImagen = false;
+          console.error("Error al subir imagen:", err);
+          alert('❌ No se pudo subir la imagen.');
+        }
+      });
+    } else {
+      guardar(this.editarImageUrl, this.editarImagePath);
+    }
   }
 
   borrarJuego(id: string | undefined) {
@@ -308,7 +437,8 @@ export class Admin implements OnInit, OnDestroy {
   // ================= RESETS =================
 
   resetFormularioJuego() {
-    this.nuevoTitle = ''; this.nuevaPlatform = ''; this.nuevaImageUrl = ''; this.nuevoPrice = null;
+    this.nuevoTitle = ''; this.nuevaPlatform = ''; this.nuevaImageUrl = ''; this.nuevoPrice = null; this.nuevoStock = 10;
+    this.nuevaImagenFile = null; this.previewNuevaImagen = null;
   }
 
   resetFormularioUsuario() {

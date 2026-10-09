@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const multer = require('multer');
+const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 const { 
   generateRegistrationOptions, 
@@ -50,6 +52,42 @@ const supabase = createClient(
 );
 
 // ==========================================
+// CONFIGURACIÓN DE SUBIDA DE IMÁGENES (Supabase Storage)
+// ==========================================
+const IMAGE_BUCKET = 'game-images';
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    const permitidos = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
+    if (permitidos.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Formato de imagen no permitido. Usa JPG, PNG, WEBP o GIF.'));
+  }
+});
+
+// Extrae la ruta interna del bucket a partir de una URL pública de Supabase Storage
+function extraerPathDesdeUrl(url) {
+  if (!url || typeof url !== 'string') return null;
+  const marca = `/${IMAGE_BUCKET}/`;
+  const idx = url.indexOf(marca);
+  if (idx === -1) return null;
+  return url.substring(idx + marca.length);
+}
+
+// Elimina una imagen del Storage a partir de su path o URL (silencioso ante errores)
+async function eliminarImagenStorage(pathOrUrl) {
+  if (!pathOrUrl) return;
+  const path = pathOrUrl.startsWith('http') ? extraerPathDesdeUrl(pathOrUrl) : pathOrUrl;
+  if (!path) return;
+  try {
+    const { error } = await supabase.storage.from(IMAGE_BUCKET).remove([path]);
+    if (error) console.error('Error al eliminar imagen del Storage:', error.message);
+  } catch (e) {
+    console.error('Error inesperado al eliminar imagen:', e.message);
+  }
+}
+
+// ==========================================
 // VARIABLES WEBAUTHN (Actualizadas para puerto 8100)
 // ==========================================
 const rpName = 'GameStore';
@@ -89,6 +127,27 @@ app.get('/api/videogames', async (req, res) => {
   }
 });
 
+// Subir imagen al Supabase Storage y devolver su URL pública + ruta interna
+app.post('/api/videogames/upload', upload.single('image'), async (req, res) => {
+  try {
+      if (!req.file) return res.status(400).json({ error: 'No se recibió ninguna imagen.' });
+
+      const ext = (req.file.originalname.split('.').pop() || 'jpg').toLowerCase();
+      const fileName = `games/${Date.now()}-${crypto.randomBytes(6).toString('hex')}.${ext}`;
+
+      const { error } = await supabase.storage
+        .from(IMAGE_BUCKET)
+        .upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: false });
+
+      if (error) throw error;
+
+      const { data: publicUrlData } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(fileName);
+      res.json({ image_url: publicUrlData.publicUrl, image_path: fileName });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/videogames', async (req, res) => {
   try {
       const { data, error } = await supabase.from('videogames').insert([req.body]).select();
@@ -102,8 +161,23 @@ app.post('/api/videogames', async (req, res) => {
 app.put('/api/videogames/:id', async (req, res) => {
   const { id } = req.params;
   try {
+      // Obtenemos la imagen anterior para borrarla si se reemplaza
+      const { data: anterior } = await supabase
+        .from('videogames')
+        .select('image_path, image_url')
+        .eq('id', id)
+        .single();
+
       const { data, error } = await supabase.from('videogames').update(req.body).eq('id', id).select();
       if (error) throw error;
+
+      // Si cambió la imagen, eliminamos la anterior del Storage
+      const nuevaImagen = req.body.image_path || req.body.image_url;
+      const imagenAnterior = anterior?.image_path || anterior?.image_url;
+      if (nuevaImagen && imagenAnterior && nuevaImagen !== imagenAnterior) {
+        await eliminarImagenStorage(imagenAnterior);
+      }
+
       res.json(data[0]);
   } catch (error) {
       res.status(500).json({ error: error.message });
@@ -113,8 +187,19 @@ app.put('/api/videogames/:id', async (req, res) => {
 app.delete('/api/videogames/:id', async (req, res) => {
   const { id } = req.params;
   try {
+      // Obtenemos la imagen antes de eliminar el registro
+      const { data: anterior } = await supabase
+        .from('videogames')
+        .select('image_path, image_url')
+        .eq('id', id)
+        .single();
+
       const { error } = await supabase.from('videogames').delete().eq('id', id);
       if (error) throw error;
+
+      // Eliminamos la imagen asociada del Storage
+      await eliminarImagenStorage(anterior?.image_path || anterior?.image_url);
+
       res.json({ message: 'Juego eliminado correctamente' });
   } catch (error) {
       res.status(500).json({ error: error.message });

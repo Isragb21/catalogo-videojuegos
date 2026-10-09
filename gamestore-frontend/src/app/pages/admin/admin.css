@@ -139,3 +139,45 @@
 .btn-cancel:hover { background: #666; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* =========================================
+   Input de archivo e imagen de previsualización
+   ========================================= */
+.file-input {
+  padding: 8px !important;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.file-input::file-selector-button {
+  background: #00ed64;
+  color: #000;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 12px;
+  transition: all 0.3s ease;
+}
+.file-input::file-selector-button:hover {
+  box-shadow: 0 0 12px #00ed64;
+}
+
+.image-preview {
+  display: block;
+  width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 237, 100, 0.3);
+  background: #1a1a1a;
+}
+
+.btn-save-game:disabled,
+.btn-save-user:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

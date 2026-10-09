@@ -8,9 +8,15 @@ export interface Videogame {
   title: string;
   platform: string;
   image_url?: string;
+  image_path?: string;
   price: number;
   stock?: number;
   is_active?: boolean;
+}
+
+export interface ImagenSubida {
+  image_url: string;
+  image_path: string;
 }
 
 @Injectable({
@@ -27,6 +33,12 @@ export class VideogameService {
 
   addVideogame(videogame: Videogame): Observable<Videogame> {
     return this.http.post<Videogame>(this.apiUrl, videogame);
+  }
+
+  uploadImage(file: File): Observable<ImagenSubida> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post<ImagenSubida>(`${this.apiUrl}/upload`, formData);
   }
 
   updateVideogame(id: string, videogame: Partial<Videogame>): Observable<Videogame> {

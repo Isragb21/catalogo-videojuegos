@@ -40,6 +40,21 @@
 .platform-badge { background: rgba(0, 237, 100, 0.1); color: #00ed64; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; }
 .price-tag { font-size: 1.4rem; font-weight: bold; color: #00ed64; float: right; }
 
+.stock-badge {
+  margin-top: 10px;
+  display: inline-block;
+  background: rgba(0, 237, 100, 0.1);
+  color: #00ed64;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.stock-badge.agotado {
+  background: rgba(255, 76, 76, 0.12);
+  color: #ff4c4c;
+}
+
 /* ========================================== */
 /* ESTILOS DE BOTONES DE ACCIÓN (AGREGADOS) */
 /* ========================================== */
