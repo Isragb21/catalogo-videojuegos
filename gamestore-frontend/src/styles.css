@@ -7,10 +7,18 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background-color: #0d0d0d; /* Fondo ultra oscuro */
   color: #e0e0e0; /* Texto gris claro para no cansar la vista */
-  font-family: 'Poppins', sans-serif; 
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.5;
+  overflow-x: hidden;
+  min-width: 320px;
 }
 
 /* Custom Scrollbar Gamer */
@@ -26,4 +34,17 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #00c753;
+}
+
+/* Media queries globales para móviles */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
 }

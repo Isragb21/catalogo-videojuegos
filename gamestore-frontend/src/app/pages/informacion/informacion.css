@@ -1,8 +1,56 @@
-.info-page { max-width: 900px; margin: 40px auto; padding: 20px; font-family: sans-serif; line-height: 1.6; }
+.info-page { max-width: 900px; margin: 40px auto; padding: 20px; font-family: 'Poppins', sans-serif; line-height: 1.6; width: 100%; }
 .info-header { text-align: center; border-bottom: 2px solid #00ed64; margin-bottom: 30px; padding-bottom: 20px; }
 .seccion { margin-bottom: 40px; }
-.grid-publico { display: flex; gap: 20px; margin-top: 15px; }
-.card-p { flex: 1; background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 4px solid #00ed64; color: #fff; }
+.grid-publico { display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap; }
+.card-p { flex: 1 1 250px; min-width: 200px; background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 4px solid #00ed64; color: #fff; }
 .terminos { background: #1a1a1a; padding: 20px; border-radius: 10px; color: #fff; }
 ul { padding-left: 20px; }
 li { margin-bottom: 10px; }
+
+@media (max-width: 768px) {
+  .info-page {
+    margin: 20px auto;
+    padding: 16px;
+  }
+
+  .info-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+  }
+
+  .seccion {
+    margin-bottom: 32px;
+  }
+
+  .grid-publico {
+    gap: 16px;
+    flex-direction: column;
+  }
+
+  .card-p {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .terminos {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-page {
+    padding: 12px;
+  }
+
+  .info-header h1 {
+    font-size: clamp(1.4rem, 5vw, 1.8rem);
+  }
+
+  .info-header p {
+    font-size: clamp(0.9rem, 3vw, 1rem);
+  }
+
+  .seccion h2 {
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+  }
+}

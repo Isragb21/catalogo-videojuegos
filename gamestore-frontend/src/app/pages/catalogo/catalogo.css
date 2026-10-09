@@ -11,23 +11,31 @@
 .glass-input-group {
   background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(0, 237, 100, 0.2);
   border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; max-width: 500px;
+  width: 100%;
 }
 .glass-input-group input { flex: 1; background: transparent; border: none; color: #fff; outline: none; font-size: 1rem; }
 
 /* Grid de Juegos */
 .games-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+  gap: 30px;
+  width: 100%;
 }
 
 /* Tarjetas de Cristal y Animación */
 .game-card {
   background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 237, 100, 0.15); border-radius: 15px; padding: 15px;
   transition: all 0.3s ease; animation: neonPulse 3s infinite alternate;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .game-card:hover { transform: translateY(-10px); border-color: #00ed64; box-shadow: 0 10px 30px rgba(0, 237, 100, 0.3); }
 
-.card-image { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; border-bottom: 2px solid #00ed64; background: #1a1a1a; margin-bottom: 10px;}
+.card-image { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; border-bottom: 2px solid #00ed64; background: #1a1a1a; margin-bottom: 10px; aspect-ratio: 16 / 9; }
 .card-title { font-size: 1.2rem; margin: 5px 0; color: #fff; }
 .platform-badge { background: rgba(0, 237, 100, 0.1); color: #00ed64; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; }
 .price-tag { font-size: 1.4rem; font-weight: bold; color: #00ed64; float: right; }
@@ -40,10 +48,12 @@
   gap: 10px;
   margin-top: 15px;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .btn-view-details {
-  flex: 1;
+  flex: 1 1 120px;
+  min-width: 100px;
   background: transparent;
   border: 2px solid #00ed64;
   color: #00ed64;
@@ -53,6 +63,7 @@
   font-weight: bold;
   transition: all 0.3s ease;
   font-size: 0.8rem;
+  touch-action: manipulation;
 }
 
 .btn-view-details:hover {
@@ -63,7 +74,8 @@
 }
 
 .btn-add-cart {
-  flex: 1;
+  flex: 1 1 120px;
+  min-width: 100px;
   background: #00ed64;
   border: none;
   color: #000;
@@ -73,6 +85,7 @@
   font-weight: bold;
   transition: all 0.3s ease;
   font-size: 0.8rem;
+  touch-action: manipulation;
 }
 
 .btn-add-cart:hover {
@@ -82,11 +95,71 @@
 }
 
 /* Carrito de Compras (Lo que habías pedido antes) */
-.contenedor-carrito { position: fixed; top: 80px; right: 20px; z-index: 1000; display: flex; flex-direction: column; align-items: flex-end; }
+.contenedor-carrito { position: fixed; top: 80px; right: 20px; z-index: 1000; display: flex; flex-direction: column; align-items: flex-end; max-width: calc(100vw - 40px); }
 .boton-carrito { background: #1a1a1a; padding: 10px 20px; border-radius: 8px; color: #00ed64; border: 2px solid #00ed64; cursor: pointer; font-weight: bold; }
-.lista-carrito { background: rgba(13, 13, 13, 0.95); border: 1px solid rgba(0, 237, 100, 0.3); border-radius: 12px; padding: 15px; margin-top: 10px; width: 320px; color: #fff; }
+.lista-carrito { background: rgba(13, 13, 13, 0.95); border: 1px solid rgba(0, 237, 100, 0.3); border-radius: 12px; padding: 15px; margin-top: 10px; width: 320px; max-width: 100%; color: #fff; }
 .item-carrito { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 10px 0; }
 .item-carrito img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
 .boton-eliminar { background: transparent; color: #ff4c4c; border: 1px solid #ff4c4c; padding: 5px; border-radius: 5px; cursor: pointer; }
 
 @keyframes neonPulse { 0% { box-shadow: 0 0 5px rgba(0, 237, 100, 0.05); } 100% { box-shadow: 0 0 20px rgba(0, 237, 100, 0.2); } }
+
+/* Responsive para catálogo */
+@media (max-width: 768px) {
+  .catalogo-container {
+    gap: 24px;
+  }
+
+  .games-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .glass-input-group {
+    max-width: 100%;
+  }
+
+  .card-image {
+    height: 160px;
+  }
+
+  .section-subtitle {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .catalogo-container {
+    gap: 20px;
+  }
+
+  .games-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card-image {
+    height: 180px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-view-details,
+  .btn-add-cart {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .contenedor-carrito {
+    right: 10px;
+    top: 70px;
+    max-width: calc(100vw - 20px);
+  }
+
+  .lista-carrito {
+    width: 100%;
+  }
+}
