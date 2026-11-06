@@ -87,12 +87,30 @@
 .btn-logical { background: #17a2b8; color: #fff; }
 .btn-logical:hover { box-shadow: 0 0 10px #17a2b8; }
 
+.btn-table-action,
 .btn-delete,
 .btn-warning-yellow,
-.btn-logical {
+.btn-logical,
+.btn-edit-action,
+.btn-reset-action,
+.btn-reactivate-action {
+  border: 0;
+  border-radius: 5px;
   min-height: 44px;
+  padding: 9px 12px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
   white-space: nowrap;
 }
+
+.btn-edit-action { background: #007bff; }
+.btn-reset-action,
+.btn-reactivate-action { background: #28a745; }
+.btn-logical { background: #17a2b8; }
+.btn-warning-yellow { background: #ffc107; color: #000; }
+.btn-delete { background: #ff4c4c; }
+.table-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
 /* Responsivo para móviles */
 @media (max-width: 992px) {
@@ -107,22 +125,168 @@
     gap: 20px;
   }
 
+  .admin-container > .section-header {
+    overflow-wrap: anywhere;
+  }
+
+  .admin-container .page-title {
+    font-size: clamp(1.45rem, 7vw, 2rem);
+    line-height: 1.25;
+  }
+
+  .dashboard-grid {
+    gap: 16px;
+  }
+
   .glass-card {
     padding: 16px;
   }
 
-  .glass-table th,
-  .glass-table td {
-    padding: 10px;
-    white-space: nowrap;
+  .form-card {
+    gap: 10px;
   }
 
-  .table-actions {
-    flex-wrap: wrap;
+  .form-card h2,
+  .table-card h2 {
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+  }
+
+  .glass-input-group {
+    margin-bottom: 12px;
+  }
+
+  .glass-input-group input,
+  .glass-input-group select {
+    box-sizing: border-box;
+  }
+
+  .btn-save-game,
+  .btn-save-user {
+    min-height: 48px;
+    padding: 12px;
+    letter-spacing: 0.04em;
+  }
+
+  .glass-table-container {
+    overflow: visible;
+    margin-top: 12px;
+  }
+
+  .glass-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .glass-table thead {
+    display: none;
+  }
+
+  .glass-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .glass-table tbody tr {
+    display: block;
+    padding: 10px 12px;
+    border: 1px solid rgba(0, 237, 100, 0.18);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.24);
+  }
+
+  .glass-table td {
+    display: grid;
+    grid-template-columns: minmax(95px, 0.38fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    padding: 9px 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .glass-table td::before {
+    content: attr(data-label);
+    color: #00ed64;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .glass-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .glass-table .table-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding-top: 12px;
+  }
+
+  .glass-table .table-actions::before {
+    margin-bottom: 2px;
+  }
+
+  .table-actions .btn-table-action,
+  .table-actions .btn-delete,
+  .table-actions .btn-warning-yellow,
+  .table-actions .btn-logical {
+    width: 100%;
+    min-height: 46px;
+    white-space: normal;
+  }
+
+  .table-image {
+    width: 64px;
+    height: 64px;
+  }
+
+  .breakable-cell {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .modal-content {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .modal-content .glass-input-group input,
+  .modal-content .glass-input-group select {
+    min-height: 48px;
+  }
+
+  .file-input {
+    max-width: 100%;
   }
 
   .modal-actions {
     flex-direction: column;
+  }
+
+  .modal-actions button {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 380px) {
+  .admin-container .section-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .glass-table td {
+    grid-template-columns: minmax(80px, 0.34fr) minmax(0, 1fr);
+    gap: 8px;
+    font-size: 0.9rem;
+  }
+
+  .glass-card {
+    padding: 13px;
   }
 }
 

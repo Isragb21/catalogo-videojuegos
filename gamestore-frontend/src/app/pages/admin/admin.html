@@ -92,19 +92,19 @@
             <tbody>
               @for (juego of juegos; track juego.id) {
                 <tr>
-                  <td><img [src]="juego.image_url" alt="{{ juego.title }}" class="table-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" /></td>
-                  <td>{{ juego.title }}</td>
-                  <td>{{ juego.platform }}</td>
-                  <td class="table-price neon-text-green">${{ juego.price }}</td>
-                  <td>
-                    <span [style.color]="(juego.stock ?? 0) > 0 ? '#00ed64' : '#ff4c4c'" style="font-weight: bold;">
+                  <td data-label="Imagen"><img [src]="juego.image_url" alt="{{ juego.title }}" class="table-image" /></td>
+                  <td data-label="Título">{{ juego.title }}</td>
+                  <td data-label="Plataforma">{{ juego.platform }}</td>
+                  <td data-label="Precio" class="table-price neon-text-green">${{ juego.price }}</td>
+                  <td data-label="Stock">
+                    <span class="stock-value" [style.color]="(juego.stock ?? 0) > 0 ? '#00ed64' : '#ff4c4c'">
                       {{ juego.stock ?? 0 }}
                     </span>
                   </td>
-                  <td class="table-actions" style="display: flex; gap: 8px;">
-                    <button type="button" class="btn" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="iniciarEdicionJuego(juego)">Editar</button>
-                    <button type="button" class="btn btn-warning-yellow btn-logical" (click)="inactivarJuego(juego.id!)">Dar de Baja</button>
-                    <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarJuego(juego.id!)">Eliminar</button>
+                  <td data-label="Acciones" class="table-actions">
+                    <button type="button" class="btn-table-action btn-edit-action" (click)="iniciarEdicionJuego(juego)">Editar</button>
+                    <button type="button" class="btn-table-action btn-warning-yellow btn-logical" (click)="inactivarJuego(juego.id!)">Dar de Baja</button>
+                    <button type="button" class="btn-table-action btn-delete" (click)="borrarJuego(juego.id!)">Eliminar</button>
                   </td>
                 </tr>
               }
@@ -131,35 +131,35 @@
             <tbody>
               @for (user of usuarios; track user.id) {
                 <tr [style.opacity]="user.is_active === false ? 0.55 : 1">
-                  <td>{{ user.full_name }}</td>
-                  <td>{{ user.email }}</td>
-                  <td>
-                    <span [style.color]="user.rol === 'admin' ? '#ffc107' : '#00ed64'" style="font-weight: bold; text-transform: uppercase;">
+                  <td data-label="Nombre">{{ user.full_name }}</td>
+                  <td data-label="Email" class="breakable-cell">{{ user.email }}</td>
+                  <td data-label="Rol">
+                    <span class="user-role" [style.color]="user.rol === 'admin' ? '#ffc107' : '#00ed64'">
                       {{ user.rol }}
                     </span>
                   </td>
-                  <td>{{ formatearFecha(user.created_at) }}</td>
-                  <td>{{ formatearFecha(user.last_sign_in_at) }}</td>
-                  <td>
-                    <span [style.color]="user.is_active === false ? '#ff4c4c' : '#00ed64'" style="font-weight: bold;">
+                  <td data-label="Registrado">{{ formatearFecha(user.created_at) }}</td>
+                  <td data-label="Último acceso">{{ formatearFecha(user.last_sign_in_at) }}</td>
+                  <td data-label="Estado">
+                    <span class="user-status" [style.color]="user.is_active === false ? '#ff4c4c' : '#00ed64'">
                       {{ user.is_active === false ? 'INACTIVO' : 'ACTIVO' }}
                     </span>
                   </td>
-                  <td class="table-actions" style="display: flex; gap: 8px;">
-                    <button type="button" class="btn" style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="resetear2FA(user.id)">Reset 2FA</button>
+                  <td data-label="Acciones" class="table-actions">
+                    <button type="button" class="btn-table-action btn-reset-action" (click)="resetear2FA(user.id)">Reset 2FA</button>
                     @if (user.rol === 'cliente') {
-                      <button type="button" class="btn" style="background: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.id, 'admin')">Hacer Admin</button>
+                      <button type="button" class="btn-table-action btn-logical" (click)="cambiarRol(user.id, 'admin')">Hacer Admin</button>
                     }
-                    <button type="button" class="btn" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="iniciarEdicionUsuario(user)">Editar</button>
+                    <button type="button" class="btn-table-action btn-edit-action" (click)="iniciarEdicionUsuario(user)">Editar</button>
                     @if (user.rol === 'admin') {
-                      <button type="button" class="btn" style="background: #ffc107; color: black; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;" (click)="cambiarRol(user.id, 'cliente')">Quitar Admin</button>
+                      <button type="button" class="btn-table-action btn-warning-yellow" (click)="cambiarRol(user.id, 'cliente')">Quitar Admin</button>
                     }
                     @if (user.is_active === false) {
-                      <button type="button" class="btn btn-logical" style="background: #28a745; color: white;" (click)="reactivarUsuario(user.id)">Reactivar</button>
+                      <button type="button" class="btn-table-action btn-reactivate-action" (click)="reactivarUsuario(user.id)">Reactivar</button>
                     } @else {
-                      <button type="button" class="btn btn-warning-yellow btn-logical" (click)="inactivarUsuario(user.id)">Dar de Baja</button>
+                      <button type="button" class="btn-table-action btn-warning-yellow" (click)="inactivarUsuario(user.id)">Dar de Baja</button>
                     }
-                    <button type="button" class="btn btn-danger-red btn-delete" (click)="borrarUsuario(user.id)">Eliminar</button>
+                    <button type="button" class="btn-table-action btn-delete" (click)="borrarUsuario(user.id)">Eliminar</button>
                   </td>
                 </tr>
               }
@@ -193,11 +193,11 @@
           <tbody>
             @for (juego of juegos; track juego.id) {
               <tr>
-                <td><img [src]="juego.image_url" alt="{{ juego.title }}" class="table-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" /></td>
-                <td>{{ juego.title }}</td>
-                <td>{{ juego.platform }}</td>
-                <td class="table-price neon-text-green">${{ juego.price }}</td>
-                <td>{{ juego.stock ?? 0 }}</td>
+                <td data-label="Imagen"><img [src]="juego.image_url" alt="{{ juego.title }}" class="table-image" /></td>
+                <td data-label="Título">{{ juego.title }}</td>
+                <td data-label="Plataforma">{{ juego.platform }}</td>
+                <td data-label="Precio" class="table-price neon-text-green">${{ juego.price }}</td>
+                <td data-label="Stock">{{ juego.stock ?? 0 }}</td>
               </tr>
             }
           </tbody>
