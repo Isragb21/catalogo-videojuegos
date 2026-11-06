@@ -11,6 +11,7 @@
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 20px;
+  min-width: 0;
 }
 
 /* Glassmorphism Cards */
@@ -22,6 +23,7 @@
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  min-width: 0;
 }
 
 /* Formularios (Acomodados a la izquierda) */
@@ -42,9 +44,9 @@
 .glass-input-group label { color: #aaa; font-size: 0.9rem; margin-bottom: 5px; display: block;}
 .glass-input-group input, 
 .glass-input-group select {
-  width: 100%; padding: 10px; background: rgba(0,0,0,0.5);
+  width: 100%; min-height: 48px; padding: 10px; background: rgba(0,0,0,0.5);
   border: 1px solid rgba(0, 237, 100, 0.2); color: #fff; border-radius: 5px;
-  outline: none;
+  outline: none; font-size: 16px;
 }
 .glass-input-group select option { color: #000; } /* Para que se lea bien al abrirlo */
 
@@ -67,7 +69,7 @@
 
 /* Tabla de Inventario y Usuarios */
 .glass-table-container { overflow-x: auto; margin-top: 15px; }
-.glass-table { width: 100%; border-collapse: collapse; text-align: left; }
+.glass-table { width: 100%; min-width: 680px; border-collapse: collapse; text-align: left; }
 .glass-table th { padding: 15px; background: rgba(0, 237, 100, 0.1); color: #00ed64; border-bottom: 2px solid #00ed64; }
 .glass-table td { padding: 12px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
 .glass-table tbody tr:hover { background: rgba(0, 237, 100, 0.05); }
@@ -85,11 +87,42 @@
 .btn-logical { background: #17a2b8; color: #fff; }
 .btn-logical:hover { box-shadow: 0 0 10px #17a2b8; }
 
+.btn-delete,
+.btn-warning-yellow,
+.btn-logical {
+  min-height: 44px;
+  white-space: nowrap;
+}
+
 /* Responsivo para móviles */
 @media (max-width: 992px) {
   .dashboard-grid { grid-template-columns: 1fr; }
   .add-game-form, .add-user-form, .current-inventory, .users-inventory {
     grid-column: 1; grid-row: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-container {
+    gap: 20px;
+  }
+
+  .glass-card {
+    padding: 16px;
+  }
+
+  .glass-table th,
+  .glass-table td {
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  .table-actions {
+    flex-wrap: wrap;
+  }
+
+  .modal-actions {
+    flex-direction: column;
   }
 }
 
@@ -102,6 +135,10 @@
   left: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -118,6 +155,9 @@
   padding: 30px;
   border-radius: 12px;
   width: 90%;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  box-sizing: border-box;
   max-width: 400px;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 237, 100, 0.1);
 }

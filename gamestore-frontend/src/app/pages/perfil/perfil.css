@@ -1,140 +1,181 @@
-.perfil-wrapper {
-  min-height: 80vh;
+.perfil-page {
+  min-height: 70vh;
+  min-height: 70svh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
-  animation: slideIn 0.6s ease-out;
+  padding: 12px;
 }
 
-.glass-container {
+.profile-card {
   background: rgba(20, 20, 20, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(0, 237, 100, 0.2);
   border-radius: 20px;
   width: 100%;
-  max-width: 450px;
-  padding: 40px;
+  max-width: 560px;
+  padding: clamp(20px, 5vw, 36px);
   box-shadow: 0 25px 50px rgba(0,0,0,0.6);
 }
 
-.perfil-header {
+.profile-header {
   text-align: center;
   margin-bottom: 30px;
 }
 
-.avatar-glow {
-  width: 130px;
-  height: 130px;
-  margin: 0 auto 20px;
-  border-radius: 50%;
-  padding: 5px;
-  background: linear-gradient(45deg, #00ed64, #00642a);
-  box-shadow: 0 0 25px rgba(0, 237, 100, 0.4);
+.profile-header h1 {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
 }
 
-.avatar-glow img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #111;
+.profile-header p {
+  margin: 8px 0 0;
+  color: #bbb;
+  font-size: 0.95rem;
 }
 
-.titulo-gamer {
-  color: #fff;
-  font-size: 1.8rem;
-  font-weight: 800;
-  margin-bottom: 5px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-
-.email-display {
+.profile-loading {
   color: #00ed64;
-  font-family: 'Courier New', Courier, monospace;
+  text-align: center;
+}
+
+.profile-loading h2 {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.profile-details {
+  color: #e0e0e0;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.profile-details p {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.35fr) minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  overflow-wrap: anywhere;
+}
+
+.profile-details strong {
+  color: #00ed64;
+}
+
+.profile-actions,
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.biometric-unavailable {
+  margin: 0;
+  color: #aaa;
   font-size: 0.9rem;
+  text-align: center;
 }
 
-.neon-divider {
-  border: none;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #00ed64, transparent);
-  margin: 25px 0;
+.profile-actions {
+  margin-top: 24px;
 }
 
-.input-group-gamer {
-  margin-bottom: 20px;
+.profile-form {
+  gap: 18px;
 }
 
-.input-group-gamer label {
+.profile-form .glass-input-group {
+  margin: 0;
+}
+
+.profile-form label {
   display: block;
-  color: #888;
-  font-size: 0.75rem;
-  text-transform: uppercase;
   margin-bottom: 8px;
-  padding-left: 5px;
+  color: #00ed64;
+  font-weight: 600;
 }
 
-.input-group-gamer input {
+.profile-form input {
   width: 100%;
-  padding: 12px 15px;
-  background: rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.1);
+  min-height: 48px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(0, 237, 100, 0.3);
   border-radius: 8px;
   color: #fff;
-  font-family: 'Poppins', sans-serif;
-  transition: 0.3s;
+  font-size: 16px;
 }
 
-.input-group-gamer input:focus {
-  border-color: #00ed64;
-  outline: none;
-  background: rgba(0, 237, 100, 0.05);
+.profile-form input:focus {
+  outline: 2px solid rgba(0, 237, 100, 0.6);
+  outline-offset: 1px;
 }
 
-.input-group-gamer input:disabled {
-  opacity: 0.6;
+.profile-form input:disabled {
+  color: #888;
   cursor: not-allowed;
-  border-color: transparent;
+  background: rgba(0,0,0,0.5);
+  border-color: rgba(255,255,255,0.1);
 }
 
-.btn-edit, .btn-save, .btn-cancel {
+.btn-profile-primary,
+.btn-profile-biometric,
+.btn-profile-cancel {
   width: 100%;
-  padding: 14px;
+  min-height: 48px;
+  padding: 12px 16px;
   border-radius: 8px;
   font-weight: 700;
   cursor: pointer;
   transition: 0.3s;
   text-transform: uppercase;
-  border: none;
+  font-family: 'Orbitron', sans-serif;
+  overflow-wrap: anywhere;
 }
 
-.btn-edit {
-  background: transparent;
-  color: #00ed64;
+.btn-profile-primary {
+  background: #00ed64;
+  color: #000;
   border: 1px solid #00ed64;
 }
 
-.btn-edit:hover {
-  background: #00ed64;
-  color: #000;
+.btn-profile-primary:hover,
+.btn-profile-biometric:hover,
+.btn-profile-cancel:hover {
   box-shadow: 0 0 20px rgba(0, 237, 100, 0.4);
 }
 
-.btn-save {
-  background: #00ed64;
-  color: #000;
+.btn-profile-biometric {
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
 }
 
-.btn-cancel {
-  background: transparent;
-  color: #ff4c4c;
-  margin-top: 10px;
+.btn-profile-cancel {
+  background: #ff4c4c;
+  border: 1px solid #ff4c4c;
+  color: #fff;
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+@media (max-width: 480px) {
+  .profile-details p {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .profile-header {
+    margin-bottom: 20px;
+  }
+
+  .profile-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .btn-profile-primary,
+  .btn-profile-biometric,
+  .btn-profile-cancel {
+    font-size: 0.85rem;
+  }
 }

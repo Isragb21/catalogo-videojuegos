@@ -5,11 +5,11 @@
 /* ========================================== */
 .hamburger-btn {
   position: fixed;
-  top: 20px;
-  left: 20px;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  left: calc(16px + env(safe-area-inset-left, 0px));
   z-index: 10001;
-  width: 46px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   background: rgba(10, 10, 10, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -82,7 +82,7 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
-  padding: 24px 20px;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 20px calc(20px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-100%);
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   overflow-y: auto;
@@ -211,8 +211,8 @@
   text-decoration: none;
   font-size: 1.1rem;
   background: rgba(255,255,255,0.05);
-  width: 35px;
-  height: 35px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -259,6 +259,7 @@
   font-weight: 700;
   font-size: 0.75rem;
   cursor: pointer;
+  min-height: 44px;
   border-radius: 4px;
   transition: 0.3s;
 }
@@ -289,10 +290,12 @@
 
 /* ESPACIADO PARA EL CONTENIDO (deja espacio para el botón hamburguesa) */
 .main-content {
-  padding: 80px 24px 20px;
+  padding: 88px 24px 24px;
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* VERSIÓN EN EL SIDEBAR */
@@ -324,14 +327,12 @@
 /* Responsive para sidebar */
 @media (max-width: 768px) {
   .main-content {
-    padding: 70px 16px 16px;
+    padding: calc(76px + env(safe-area-inset-top, 0px)) 16px calc(20px + env(safe-area-inset-bottom, 0px));
   }
 
   .hamburger-btn {
-    top: 16px;
-    left: 16px;
-    width: 44px;
-    height: 40px;
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    left: calc(12px + env(safe-area-inset-left, 0px));
   }
 
   .nav-links a {
@@ -342,13 +343,13 @@
 
 @media (max-width: 480px) {
   .sidebar-cyber {
-    width: 260px;
-    gap: 24px;
-    padding: 20px 16px;
+    width: min(300px, calc(100vw - 32px));
+    gap: 20px;
+    padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
   }
 
   .main-content {
-    padding: 70px 12px 12px;
+    padding: calc(72px + env(safe-area-inset-top, 0px)) 12px calc(16px + env(safe-area-inset-bottom, 0px));
   }
 
   .user-email {
@@ -360,8 +361,8 @@
   }
 
   .btn-icon {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     font-size: 1rem;
   }
 

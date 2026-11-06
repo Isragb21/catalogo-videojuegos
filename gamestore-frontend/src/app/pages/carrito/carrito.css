@@ -1,11 +1,13 @@
 .carrito-container {
   max-width: 1000px;
-  margin: 40px auto;
-  padding: 20px;
+  margin: 20px auto;
+  padding: clamp(14px, 3vw, 24px);
   background-color: #121212;
   color: white;
   border-radius: 12px;
   font-family: 'Poppins', sans-serif;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .carrito-header {
@@ -15,6 +17,12 @@
   border-bottom: 2px solid #333;
   padding-bottom: 15px;
   margin-bottom: 20px;
+}
+
+.btn-vaciar,
+.btn-pagar,
+.btn-cerrar-modal {
+  min-height: 44px;
 }
 
 .titulo {
@@ -62,6 +70,12 @@
 .item-info {
   display: flex;
   gap: 15px;
+  min-width: 0;
+}
+
+.item-detalle {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .item-imagen {
@@ -93,6 +107,8 @@
   background: #333;
   color: white;
   border: none;
+  width: 44px;
+  min-height: 44px;
   padding: 5px 12px;
   cursor: pointer;
   border-radius: 4px;
@@ -121,7 +137,9 @@
   cursor: pointer;
   color: #ff4c4c;
   transition: all 0.2s ease;
-  padding: 5px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
   border-radius: 6px;
 }
 
@@ -221,6 +239,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   z-index: 9999;
   animation: fadeIn 0.3s ease;
 }
@@ -229,6 +250,11 @@
   background: #1a1a1a;
   padding: 40px;
   border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
   text-align: center;
   border: 2px solid #00ff88;
   box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
@@ -305,6 +331,7 @@
   border: none;
   color: white;
   padding: 14px 24px;
+  min-height: 48px;
   border-radius: 10px;
   font-weight: bold;
   font-size: 1rem;
@@ -323,11 +350,16 @@
   cursor: not-allowed;
 }
 
+.biometrico-actions button {
+  width: 100%;
+}
+
 .btn-registrar {
   background: transparent;
   border: 2px solid #00ff88;
   color: #00ff88;
   padding: 12px 24px;
+  min-height: 48px;
   border-radius: 8px;
   font-weight: bold;
   font-size: 0.95rem;
@@ -348,6 +380,7 @@
   border: 2px solid #ff4c4c;
   color: #ff4c4c;
   padding: 12px 24px;
+  min-height: 48px;
   border-radius: 8px;
   font-weight: bold;
   font-size: 0.95rem;
@@ -382,19 +415,53 @@
 
 /* Responsive para móviles */
 @media (max-width: 768px) {
+  .carrito-container {
+    margin: 8px auto;
+  }
+
+  .carrito-header {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .titulo {
+    font-size: clamp(1.3rem, 5vw, 1.8rem);
+  }
+
   .carrito-grid-header {
     display: none;
   }
   
   .carrito-item {
     grid-template-columns: 1fr;
-    gap: 15px;
-    text-align: center;
+    gap: 12px;
+    text-align: left;
+    padding: 16px 4px;
   }
   
   .item-info {
-    flex-direction: column;
     align-items: center;
+  }
+
+  .item-imagen {
+    width: 72px;
+    height: 90px;
+    flex: 0 0 auto;
+  }
+
+  .item-cantidad {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .cantidad-numero {
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .item-subtotal {
+    text-align: left;
   }
   
   .carrito-resumen {
@@ -406,11 +473,40 @@
   }
   
   .modal-biometrico {
-    width: 90%;
-    padding: 25px;
+    width: 100%;
+    padding: clamp(20px, 6vw, 28px);
   }
   
   .modal-biometrico h3 {
     font-size: 1.1rem;
+  }
+
+  .btn-pagar {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .carrito-header {
+    flex-direction: column;
+  }
+
+  .item-info {
+    align-items: flex-start;
+  }
+
+  .total {
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .total-label {
+    font-size: 1rem;
+  }
+
+  .total-monto {
+    font-size: 1.6rem;
   }
 }

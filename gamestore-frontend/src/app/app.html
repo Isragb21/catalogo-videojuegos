@@ -1,5 +1,12 @@
 <!-- Botón hamburguesa (3 líneas) -->
-<button class="hamburger-btn" (click)="toggleMenu()" [class.abierto]="menuAbierto" aria-label="Menú lateral">
+<button
+  class="hamburger-btn"
+  (click)="toggleMenu()"
+  [class.abierto]="menuAbierto"
+  [attr.aria-expanded]="menuAbierto"
+  aria-controls="sidebar-navigation"
+  [attr.aria-label]="menuAbierto ? 'Cerrar menú' : 'Abrir menú'"
+>
   <span class="linea"></span>
   <span class="linea"></span>
   <span class="linea"></span>
@@ -11,7 +18,7 @@
 }
 
 <!-- Sidebar lateral retráctil -->
-<aside class="sidebar-cyber" [class.abierto]="menuAbierto">
+<aside id="sidebar-navigation" class="sidebar-cyber" [class.abierto]="menuAbierto">
   <div class="sidebar-scan"></div>
 
   <div class="logo-wrapper" routerLink="/inicio" (click)="cerrarMenu()">

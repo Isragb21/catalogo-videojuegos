@@ -35,6 +35,7 @@ export class CarritoComponent implements OnInit {
   // Variables para huella digital
   mostrarModalVerificacion: boolean = false;
   biometricoDisponible: boolean = false;
+  biometricoCargando: boolean = true;
   tieneHuellaRegistrada: boolean = false;
   verificandoBiometrico: boolean = false;
 
@@ -49,8 +50,15 @@ export class CarritoComponent implements OnInit {
   }
 
   async verificarBiometrico() {
-    this.biometricoDisponible = await this.fingerprintService.isBiometricAvailable();
-    this.tieneHuellaRegistrada = this.fingerprintService.hasFingerprintRegistered();
+    try {
+      this.biometricoDisponible = await this.fingerprintService.isBiometricAvailable();
+      this.tieneHuellaRegistrada = this.fingerprintService.hasFingerprintRegistered();
+    } catch (error) {
+      console.error('Error al comprobar la disponibilidad biométrica:', error);
+    } finally {
+      this.biometricoCargando = false;
+      this.cdr.detectChanges();
+    }
   }
 
   actualizarCantidad(id: string, cantidad: number) {
@@ -80,7 +88,7 @@ export class CarritoComponent implements OnInit {
     }
 
     if (!this.tieneHuellaRegistrada) {
-      this.mensajeModal = '⚠️ Por seguridad, debes registrar tu huella en tu Perfil antes de pagar.';
+      this.mensajeModal = '⚠️ Por seguridad, debes activar la biometría de tu dispositivo en tu Perfil antes de pagar.';
       this.accionModal = 'perfil';
       this.textoBotonModal = 'Ir a mi Perfil';
       this.mostrarModal = true;

@@ -4,6 +4,7 @@
   flex-direction: column;
   gap: 50px;
   padding: 20px;
+  min-width: 0;
   animation: fadeIn 0.8s ease-out;
 }
 
@@ -67,6 +68,7 @@
 
 /* Botones Premium */
 .btn-cta, .btn-outline {
+  min-height: 44px;
   padding: 12px 30px;
   font-size: clamp(0.95rem, 2vw, 1.1rem);
   font-weight: 600;
@@ -142,6 +144,8 @@
   color: #fff;
   text-decoration: none;
   width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .glass-card:hover {
@@ -224,5 +228,17 @@
 
   .btn-cta, .btn-outline {
     max-width: 100%;
+  }
+
+  .hero-section {
+    border-radius: 14px;
+  }
+
+  .encabezado-seccion h2 {
+    font-size: 1.2rem;
+  }
+
+  .link-card {
+    align-items: flex-start;
   }
 }

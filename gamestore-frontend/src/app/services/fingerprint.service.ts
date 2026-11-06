@@ -30,7 +30,7 @@ export class FingerprintService {
 
   async registerFingerprint(userId: string, userName: string): Promise<{ success: boolean; message: string }> {
     if (!this.isWebAuthnSupported()) {
-      return { success: false, message: 'Tu navegador no soporta autenticación biométrica' };
+      return { success: false, message: 'Tu navegador no admite autenticación biométrica del dispositivo' };
     }
 
     try {
@@ -51,7 +51,7 @@ export class FingerprintService {
 
       if (verificationResp.verified) {
         localStorage.setItem('fingerprint_user_id', userId);
-        return { success: true, message: '✅ ¡Huella registrada con éxito!' };
+        return { success: true, message: '✅ ¡Autenticación biométrica configurada con éxito!' };
       }
       return { success: false, message: 'No se pudo verificar el registro' };
     } catch (error: any) {
@@ -67,7 +67,7 @@ export class FingerprintService {
     }
 
     if (!this.isWebAuthnSupported()) {
-      return { success: false, message: 'Tu navegador no soporta autenticación biométrica' };
+      return { success: false, message: 'Tu navegador no admite autenticación biométrica del dispositivo' };
     }
 
     try {
@@ -92,7 +92,7 @@ export class FingerprintService {
       }
     } catch (error: any) {
       console.error('Error en verificación:', error);
-      return { success: false, message: 'Fallo al autenticar huella' };
+      return { success: false, message: 'No se pudo completar la autenticación biométrica' };
     }
   }
 

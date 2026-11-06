@@ -32,13 +32,19 @@ export class Login implements OnInit {
   correoActual = '';   
   uidActual = '';
   esNuevo2FA = false;
+  biometriaDisponible = false;
 
   private router = inject(Router);
   private authService = inject(AuthService);
   public fingerprintService = inject(FingerprintService);
 
-  ngOnInit() {
+  async ngOnInit() {
     this.authService.clearLocalSession();
+    try {
+      this.biometriaDisponible = await this.fingerprintService.isBiometricAvailable();
+    } catch (error) {
+      console.error('Error al comprobar la disponibilidad biométrica:', error);
+    }
   }
 
   async loginConHuella() {
@@ -50,7 +56,7 @@ export class Login implements OnInit {
         this.correoActual = userData.email;
         this.preparar2FA(userData);
       } catch (err) {
-        this.mensajeError = 'Error al cargar perfil desde la huella.';
+        this.mensajeError = 'Error al cargar el perfil con la biometría del dispositivo.';
       }
     } else {
       this.mensajeError = result.message;

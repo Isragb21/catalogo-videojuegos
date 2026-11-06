@@ -1,6 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { of } from 'rxjs';
 
 import { Catalogo } from './catalogo';
+import { AuthService } from '../../services/auth';
+import { CarritoService } from '../../services/carrito.service';
+import { VideogameService } from '../../services/videogame.service';
 
 describe('Catalogo', () => {
   let component: Catalogo;
@@ -8,7 +13,13 @@ describe('Catalogo', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Catalogo]
+      imports: [Catalogo],
+      providers: [
+        { provide: CarritoService, useValue: { agregarAlCarrito: vi.fn() } },
+        { provide: AuthService, useValue: { usuario$: of(null) } },
+        { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: VideogameService, useValue: { getVideogames: () => of([]) } },
+      ],
     })
     .compileComponents();
 

@@ -26,8 +26,12 @@ export class Perfil implements OnInit {
   uid: string = '';
   cargando = true;
   editando = false;
+  biometriaDisponible = false;
+  biometriaComprobada = false;
 
   ngOnInit() {
+    void this.comprobarBiometria();
+
     // Se suscribe al estado de autenticación
     this.authService.usuario$.subscribe(async (user) => {
       if (user) {
@@ -61,7 +65,18 @@ export class Perfil implements OnInit {
       alert(result.message);
     } catch (error) {
       console.error(error);
-      alert('Hubo un error al registrar la huella.');
+      alert('Hubo un error al registrar la biometría.');
+    }
+  }
+
+  private async comprobarBiometria() {
+    try {
+      this.biometriaDisponible = await this.fingerprintService.isBiometricAvailable();
+    } catch (error) {
+      console.error('Error al comprobar la disponibilidad biométrica:', error);
+    } finally {
+      this.biometriaComprobada = true;
+      this.cdr.detectChanges();
     }
   }
 

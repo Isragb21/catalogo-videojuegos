@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 
 import { Perfil } from './perfil';
+import { AuthService } from '../../services/auth';
+import { FingerprintService } from '../../services/fingerprint.service';
 
 describe('Perfil', () => {
   let component: Perfil;
@@ -8,7 +11,17 @@ describe('Perfil', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Perfil]
+      imports: [Perfil],
+      providers: [
+        { provide: AuthService, useValue: { usuario$: of(null), obtenerPerfil: vi.fn() } },
+        {
+          provide: FingerprintService,
+          useValue: {
+            registerFingerprint: vi.fn(),
+            isBiometricAvailable: vi.fn().mockResolvedValue(false),
+          },
+        },
+      ],
     })
     .compileComponents();
 

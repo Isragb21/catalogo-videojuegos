@@ -54,8 +54,9 @@
       </div>
       
       <div class="acciones-pago">
-        <button (click)="procesarPago()" class="btn-pagar" [disabled]="procesando">
-          <span *ngIf="!procesando">💰 Pagar Ahora</span>
+        <button (click)="procesarPago()" class="btn-pagar" [disabled]="procesando || biometricoCargando">
+          <span *ngIf="biometricoCargando">⏳ Comprobando seguridad...</span>
+          <span *ngIf="!biometricoCargando && !procesando">💰 Pagar Ahora</span>
           <span *ngIf="procesando">⏳ Procesando pago...</span>
         </button>
       </div>
@@ -73,13 +74,13 @@
   
   <!-- Modal de VERIFICACIÓN -->
   <div class="modal-overlay" *ngIf="mostrarModalVerificacion">
-    <div class="modal-contenido modal-biometrico">
+    <div class="modal-contenido modal-biometrico" role="dialog" aria-modal="true" aria-labelledby="biometric-title">
       <div class="modal-icono">🔐</div>
-      <h3>Verificación Biométrica</h3>
-      <p>Coloca tu dedo en el sensor para confirmar tu identidad</p>
+      <h3 id="biometric-title">Verificación Biométrica</h3>
+      <p>Confirma tu identidad con el método de seguridad configurado en este dispositivo, como huella, rostro o PIN.</p>
       <div class="biometrico-actions">
         <button (click)="confirmarConBiometrico()" class="btn-biometrico" [disabled]="verificandoBiometrico">
-          <span *ngIf="!verificandoBiometrico">🖐️ Verificar con Huella</span>
+        <span *ngIf="!verificandoBiometrico">🔐 Verificar identidad</span>
           <span *ngIf="verificandoBiometrico">⏳ Verificando...</span>
         </button>
         <button (click)="cancelarVerificacion()" class="btn-cancelar">❌ Cancelar</button>
