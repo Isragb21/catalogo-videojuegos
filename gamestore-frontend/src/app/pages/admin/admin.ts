@@ -127,6 +127,11 @@ export class Admin implements OnInit, OnDestroy {
     });
   }
 
+  // Extrae el mensaje real que devuelve el backend
+  mensajeErrorBackend(err: any): string {
+    return err?.error?.error || err?.error?.message || err?.message || 'Error desconocido';
+  }
+
   // Maneja la selección de imagen para un NUEVO juego
   onArchivoNuevo(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -163,7 +168,10 @@ export class Admin implements OnInit, OnDestroy {
           this.juegos.push(juegoCreado); // Lo agregamos visualmente
           this.resetFormularioJuego();
         },
-        error: (err: any) => console.error("Error al guardar juego:", err)
+        error: (err: any) => {
+          console.error("Error al guardar juego:", this.mensajeErrorBackend(err));
+          alert('❌ No se pudo guardar el juego: ' + this.mensajeErrorBackend(err));
+        }
       });
     };
 
@@ -177,8 +185,8 @@ export class Admin implements OnInit, OnDestroy {
         },
         error: (err: any) => {
           this.subiendoImagen = false;
-          console.error("Error al subir imagen:", err);
-          alert('❌ No se pudo subir la imagen.');
+          console.error("Error al subir imagen:", this.mensajeErrorBackend(err));
+          alert('❌ No se pudo subir la imagen: ' + this.mensajeErrorBackend(err));
         }
       });
     } else {
@@ -239,8 +247,8 @@ export class Admin implements OnInit, OnDestroy {
           alert('✅ Videojuego actualizado correctamente');
         },
         error: (err: any) => {
-          console.error("Error al actualizar juego:", err);
-          alert('❌ No se pudo actualizar el videojuego.');
+          console.error("Error al actualizar juego:", this.mensajeErrorBackend(err));
+          alert('❌ No se pudo actualizar el videojuego: ' + this.mensajeErrorBackend(err));
         }
       });
     };
@@ -255,8 +263,8 @@ export class Admin implements OnInit, OnDestroy {
         },
         error: (err: any) => {
           this.subiendoImagen = false;
-          console.error("Error al subir imagen:", err);
-          alert('❌ No se pudo subir la imagen.');
+          console.error("Error al subir imagen:", this.mensajeErrorBackend(err));
+          alert('❌ No se pudo subir la imagen: ' + this.mensajeErrorBackend(err));
         }
       });
     } else {

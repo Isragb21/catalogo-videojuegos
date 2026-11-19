@@ -74,6 +74,28 @@ function extraerPathDesdeUrl(url) {
   return url.substring(idx + marca.length);
 }
 
+// Construye la URL pública a partir de la ruta guardada en image_path.
+// Si el valor ya es una URL (datos antiguos), la devuelve tal cual.
+function publicUrlDesdePath(pathOrUrl) {
+  if (!pathOrUrl || typeof pathOrUrl !== 'string') return '';
+  if (pathOrUrl.startsWith('http')) return pathOrUrl;
+  const { data } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(pathOrUrl);
+  return data?.publicUrl || '';
+}
+
+// El frontend siempre espera `image_url`, pero la BD solo tiene `image_path`.
+// Agregamos ese campo a la respuesta sin escribirlo en la tabla.
+function conUrlPublica(juego) {
+  if (!juego) return juego;
+  return { ...juego, image_url: publicUrlDesdePath(juego.image_path || juego.image_url) };
+}
+
+// Quita `image_url` del payload: esa columna no existe en la BD real.
+function soloColumnasReales(body) {
+  const { image_url, ...resto } = body || {};
+  return resto;
+}
+
 // Elimina una imagen del Storage a partir de su path o URL (silencioso ante errores)
 async function eliminarImagenStorage(pathOrUrl) {
   if (!pathOrUrl) return;
@@ -120,7 +142,7 @@ app.get('/api/videogames', async (req, res) => {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      res.json(data);
+      res.json((data || []).map(conUrlPublica));
   } catch (error) {
       console.error("Error al obtener catálogo:", error.message);
       res.status(500).json({ error: error.message });
@@ -150,9 +172,10 @@ app.post('/api/videogames/upload', upload.single('image'), async (req, res) => {
 
 app.post('/api/videogames', async (req, res) => {
   try {
-      const { data, error } = await supabase.from('videogames').insert([req.body]).select();
+      const payload = soloColumnasReales(req.body);
+      const { data, error } = await supabase.from('videogames').insert([payload]).select();
       if (error) throw error;
-      res.json(data[0]);
+      res.json(conUrlPublica(data[0]));
   } catch (error) {
       res.status(500).json({ error: error.message });
   }
@@ -168,17 +191,18 @@ app.put('/api/videogames/:id', async (req, res) => {
         .eq('id', id)
         .single();
 
-      const { data, error } = await supabase.from('videogames').update(req.body).eq('id', id).select();
+      const payload = soloColumnasReales(req.body);
+      const { data, error } = await supabase.from('videogames').update(payload).eq('id', id).select();
       if (error) throw error;
 
       // Si cambió la imagen, eliminamos la anterior del Storage
-      const nuevaImagen = req.body.image_path || req.body.image_url;
+      const nuevaImagen = payload.image_path || req.body.image_url;
       const imagenAnterior = anterior?.image_path || anterior?.image_url;
       if (nuevaImagen && imagenAnterior && nuevaImagen !== imagenAnterior) {
         await eliminarImagenStorage(imagenAnterior);
       }
 
-      res.json(data[0]);
+      res.json(conUrlPublica(data[0]));
   } catch (error) {
       res.status(500).json({ error: error.message });
   }
