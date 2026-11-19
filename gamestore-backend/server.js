@@ -537,6 +537,66 @@ app.post('/api/biometrics/generate-authentication-options', async (req, res) => 
   }
 });
 
+// === INICIO MIS COMPRAS / PAGOS (inyectado por asistente) ===
+
+// 3. Pagos / Compras (Checkout + Historial) — sincronizado con Supabase
+app.post('/api/pago', async (req, res) => {
+  const { user_id, items } = req.body; // items: [{ gameId, quantity }]
+  if (!user_id || !Array.isArray(items)) return res.status(400).json({ error: 'Datos de compra incompletos' });
+
+  try {
+    // Evita compras duplicadas: borra el carrito del usuario antes de crear la orden.
+    const del = await supabase.from('cart_items').delete().eq('user_id', user_id);
+    if (del.error) throw del.error;
+
+    const gameRows = [];
+    let totalAmount = 0;
+    for (const it of items) {
+      if (!it || !it.gameId) continue;
+      const qty = Math.max(1, parseInt(it.quantity, 10) || 1);
+      const { data: gdata } = await supabase.from('videogames').select('*').eq('id', it.gameId).maybeSingle();
+      if (!gdata) continue; // sin stock / desactivado -> se omite el item
+      const priceAtPurchase = Number(gdata.price) || 0;
+      totalAmount += priceAtPurchase * qty;
+      gameRows.push({ videogame_id: gdata.id, quantity: qty, price_at_purchase: priceAtPurchase });
+    }
+
+    if (gameRows.length === 0) return res.status(400).json({ error: 'Ningún juego disponible para comprar' });
+
+    const now = new Date();
+    const { data: orderData, error: oErr } = await supabase.from('orders').insert([
+      { user_id, total_amount: totalAmount, status: 'COMPLETED', payment_method: 'BIOMETRIC', created_at: now, is_active: true },
+    ]);
+    if (oErr) throw oErr;
+
+    const { error: iErr } = await supabase.from('order_items').insert(
+      gameRows.map(r => ({ ...r, order_id: orderData.id })),
+    );
+    if (iErr) throw iErr;
+
+    console.log(`✅ Compra registrada para ${user_id}: total $${totalAmount}, ${gameRows.length} item(s)`);
+    return res.json({ success: true, orderId: orderData.id, total_amount: totalAmount });
+  } catch (e) {
+    console.error('Error en /api/pago:', e);
+    return res.status(500).json({ error: e.message || 'Error procesando compra' });
+  }
+});
+
+app.get('/api/orders/:userId', async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*, order_items(*, videogames(*))')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return res.json(data ?? []);
+  } catch (e) {
+    console.error('Error en /api/orders/:userId:', e);
+    return res.status(500).json({ error: e.message || 'Error al cargar órdenes' });
+  }
+});
 app.post('/api/biometrics/verify-authentication', async (req, res) => {
   const { user_id, authenticationResponse } = req.body;
   const expectedChallenge = currentChallenges[user_id];
