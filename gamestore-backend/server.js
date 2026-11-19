@@ -564,10 +564,13 @@ app.post('/api/pago', async (req, res) => {
     if (gameRows.length === 0) return res.status(400).json({ error: 'Ningún juego disponible para comprar' });
 
     const now = new Date();
+    // .select() es necesario para que Supabase devuelva la fila insertada;
+    // sin él, `orderData` es null y falla al leer `orderData.id`.
     const { data: orderData, error: oErr } = await supabase.from('orders').insert([
       { user_id, total_amount: totalAmount, status: 'COMPLETED', payment_method: 'BIOMETRIC', created_at: now, is_active: true },
-    ]);
+    ]).select();
     if (oErr) throw oErr;
+    if (!orderData || orderData.length === 0) throw new Error('No se pudo crear la orden');
 
     const { error: iErr } = await supabase.from('order_items').insert(
       gameRows.map(r => ({ ...r, order_id: orderData.id })),
