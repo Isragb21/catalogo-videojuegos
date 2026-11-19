@@ -134,14 +134,33 @@ function getWebAuthnConfig(req) {
 // ==========================================
 // 1. Catálogo de Juegos (CRUD COMPLETO)
 // ==========================================
+// Campos que realmente usa el catálogo móvil. Antes se hacía SELECT * y se
+// enviaban columnas innecesarias (image_path vacío, is_active, created_at...).
+const CATALOG_FIELDS = 'id,title,description,price,discount_percentage,platform,category,image_path,stock';
+
 app.get('/api/videogames', async (req, res) => {
   try {
-      // Solo catálogo de juegos activos
-      const { data, error } = await supabase.from('videogames')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+      // Filtros opcionales: ?platform=PC&category=AVENTURA&search=zelda
+      // Paginación opcional: ?limit=10&offset=0
+      const { platform, category, search } = req.query;
+      const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 100);
+      const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
+
+      let query = supabase.from('videogames')
+        .select(CATALOG_FIELDS)
+        .eq('is_active', true);
+
+      if (platform) query = query.eq('platform', String(platform));
+      if (category) query = query.eq('category', String(category));
+      if (search) query = query.ilike('title', `%${String(search)}%`);
+
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
       if (error) throw error;
+      res.setHeader('X-Page-Limit', String(limit));
+      res.setHeader('X-Page-Offset', String(offset));
       res.json((data || []).map(conUrlPublica));
   } catch (error) {
       console.error("Error al obtener catálogo:", error.message);
@@ -239,6 +258,23 @@ app.patch('/api/videogames/:id/logical-delete', async (req, res) => {
         .eq('id', id);
       if (error) throw error;
       res.json({ message: 'Juego dado de baja (inactivo)' });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Detalle por id. Antes no existía y la app recibía 404 al abrir un juego
+// desde un enlace profundo. Consulta con índice primario y proyección.
+app.get('/api/videogames/:id', async (req, res) => {
+  try {
+      const { data, error } = await supabase
+        .from('videogames')
+        .select(CATALOG_FIELDS)
+        .eq('id', req.params.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return res.status(404).json({ error: 'Juego no encontrado' });
+      res.json(conUrlPublica(data));
   } catch (error) {
       res.status(500).json({ error: error.message });
   }
