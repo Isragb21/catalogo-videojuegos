@@ -564,21 +564,23 @@ app.post('/api/pago', async (req, res) => {
     if (gameRows.length === 0) return res.status(400).json({ error: 'Ningún juego disponible para comprar' });
 
     const now = new Date();
-    // .select() es necesario para que Supabase devuelva la fila insertada;
-    // sin él, `orderData` es null y falla al leer `orderData.id`.
+    // .select() devuelve un ARRAY de filas insertadas, no un objeto suelto.
+    // Hay que tomar [0]; si se usa `orderData.id` directamente sale undefined
+    // y los order_items quedan huérfanos (sin order_id).
     const { data: orderData, error: oErr } = await supabase.from('orders').insert([
       { user_id, total_amount: totalAmount, status: 'COMPLETED', payment_method: 'BIOMETRIC', created_at: now, is_active: true },
     ]).select();
     if (oErr) throw oErr;
-    if (!orderData || orderData.length === 0) throw new Error('No se pudo crear la orden');
+    const insertedOrder = Array.isArray(orderData) ? orderData[0] : orderData;
+    if (!insertedOrder?.id) throw new Error('No se pudo crear la orden');
 
     const { error: iErr } = await supabase.from('order_items').insert(
-      gameRows.map(r => ({ ...r, order_id: orderData.id })),
+      gameRows.map(r => ({ ...r, order_id: insertedOrder.id })),
     );
     if (iErr) throw iErr;
 
     console.log(`✅ Compra registrada para ${user_id}: total $${totalAmount}, ${gameRows.length} item(s)`);
-    return res.json({ success: true, orderId: orderData.id, total_amount: totalAmount });
+    return res.json({ success: true, orderId: insertedOrder.id, total_amount: totalAmount });
   } catch (e) {
     console.error('Error en /api/pago:', e);
     return res.status(500).json({ error: e.message || 'Error procesando compra' });
